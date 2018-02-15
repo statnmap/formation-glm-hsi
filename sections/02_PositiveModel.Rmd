@@ -1,0 +1,487 @@
+```{r EN_PresentationPositive, eval=(lang == "EN"), results='asis'}
+cat('
+## Positive sub-model
+### Outlines
+The procedure followed on the complete dataset should be used again on the sub-dataset.
+
+- Create a subset of the dataset to only keep positive values
+- Explore the new sub-dataset
+    + Explore potential effect of covariates
+    + Explore potential distribution laws
+    + Test for interactions
+- Choose the best model  
+', 
+if (Version == "Teacher") {'
+### Exploration
+
+The choice of a log-transformation of densities shows distributions visually close to Gaussian distribution when separating potential covariates (Fig. \\@ref(fig:RFigCovEffectPositive))'},'
+',
+sep = "")
+```
+```{r FR_PresentationPositive, eval=(lang == "FR"), results='asis'}
+cat('
+## Sous-modèle sur données positives
+### Étapes
+La procédure à adopter avec le sous-groupe de données est la même qu\'avec le jeu de données complet.
+
+- Créer un sous-jeu de données contenant uniquement les observations positives
+- Explorer ce nouveau jeu de données
+    + Explorer les effets potentiels des covariables
+    + Explorer les potentielles loi de distributions
+    + Tester les interactions
+- Choisir le meilleur modèle  
+', 
+if (Version == "Teacher") {'
+### Exploration
+L\'utilisation d\'une transformation log des données montre des distributions proche d\'une loi Gaussienne lorsqu\'on sépare par covariables (Fig. \\@ref(fig:RFigCovEffectPositive))'},'.  
+',
+sep = "")
+```
+
+```{r FigCovEffectPositiveCap, eval=(Version == "Teacher"), results='asis'}
+cat(ifelse(lang == "EN", '
+(ref:RFigCovEffectPositiveCap) log-Density observations compared Bathymetry and Sediment covariates
+', 
+'(ref:RFigCovEffectPositiveCap) Observations des densités log-transformées par rapport aux covariables Bathymétrie et Sédiments
+'), sep = "")
+```
+
+```{r R_LoadDataPositive.T, purl=purl.T, results='hide'}
+# Positive Model ===============================================================
+# Load the data shapefile
+# dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+```
+```{r R_LoadDataPositive.S, purl=purl.S, eval=eval.S}
+# Positive Model ===============================================================
+# Load the data shapefile
+Stations_covariates_wgs84 <- readOGR(...)
+names(Stations_covariates_wgs84)[9:16] <- 
+  c("SeaLim", "Coast", "Zone_bio", "Sedim", "id", "Bathy", "Pente", "TPI")
+
+```
+
+```{r R_PrepareDataPositive.T, purl=purl.T, results='hide'}
+# Transform to non-spatial dataset
+dataset.tmp <- as.tbl(Stations_covariates_wgs84@data)
+dataset.tmp
+dim(dataset.tmp)
+summary(dataset.tmp)
+
+# Clean dataset
+names(dataset.tmp) <- gsub("_pt", "", names(dataset.tmp))
+
+# Add a new covariate: bathymetry as class factor covariate
+# c("1depth < 5 m", "2depth 5 - 10 m", "3depth 10 - 20 m", "4depth 20 - 50 m")
+dataset.orig <- dataset.tmp %>%
+  mutate(Bathy_c = 
+           cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+               labels = c("1depth < 5m", "2depth 5-10m",
+                          "3depth 10-20m", "4depth 20-50m"),
+               include.lowest = TRUE)) %>%
+  # dplyr::select(-matches("coords"), -optional, -id) %>%
+  dplyr::select(lat:Density, Sedim, Bathy, Bathy_c) %>%
+  mutate(Year = as.factor(as.character(Year))) 
+
+# Extract dataset with only positive values
+dataset <- dataset.orig %>%
+  filter(Density > 0)
+
+dim(dataset)
+rm(dataset.tmp)
+
+```
+```{r R_PrepareDataPositive.S, purl=purl.S, eval=eval.S}
+# Transform to non-spatial dataset
+dataset.orig <- as.tbl(Stations_covariates_wgs84@data)
+
+# Clean dataset names
+names(dataset.orig) <- gsub("_pt", "", names(dataset.orig))
+
+# Add a new covariate: bathymetry as class factor covariate using cut
+# c("1depth < 5m", "2depth 5-10m", "3depth 10-20 m", "4depth 20-50 m")
+dataset.orig$Bathy_c <- cut(
+  -dataset.orig$Bathy, 
+  breaks = c(min(-dataset.orig$Bathy), 5, 10, 20, 50),
+  labels = c("1depth < 5m", "2depth 5-10m", "3depth 10-20 m", "4depth 20-50 m"),
+  include.lowest = TRUE
+)
+# Extract dataset with only positive values
+dataset <- dataset.orig...
+
+```
+
+```{r R_DataBalancePositive.T, eval=purl.T, purl=purl.T}
+# Explore data =================================================================
+# _Balance of sampling plan ----
+levels(dataset$Year)
+levels(dataset$Bathy_c)
+levels(dataset$Sedim)
+
+table(dataset$Year, dataset$Sedim)
+table(dataset$Year, dataset$Bathy_c)
+table(dataset$Bathy_c, dataset$Sedim)
+
+ftable(table(dataset$Year, dataset$Bathy_c, dataset$Sedim))
+
+```
+```{r R_DataBalancePositive.S, purl=purl.S, eval=eval.S}
+# Explore data -----------------------------------------------------------------
+# _Balance of sampling plan ----
+levels(dataset$Bathy_c)
+
+table(dataset$Year, dataset$Sedim)
+
+ftable(table(dataset$Year, dataset$Bathy_c, dataset$Sedim))
+
+```
+
+```{r R_CovEffectPositive.T, purl=purl.T, eval=purl.T, results='hide', fig.keep='none'}
+# _Covariates potential effect ----
+# Plot the data by class of factors
+ggplot() +
+  geom_point(data = dataset, aes(Bathy, Density)) +
+  facet_wrap(~Sedim)
+
+pairs(Density ~ Bathy * Sedim, data = dataset)
+# Comment: This graph is not well adpated to qualitative covariates 
+# but it can be very useful for quantitative covariates
+GGally::ggpairs(dataset, columns = 4:7)
+
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Density),
+                 bins = 30, fill = "cyan", col = "grey20")
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+g + facet_wrap(~Sedim)
+g + facet_grid(Bathy_c ~ Sedim)
+
+ggplot(dataset) +
+  geom_histogram(aes(log(Density)),
+                 bins = 30, fill = "orange", col = "grey40") +
+  facet_grid(Bathy_c ~ Sedim)
+
+# Boxplots (ggplot2)
+ggplot(dataset) +
+  geom_boxplot(aes(x = "", y = log(Density)))
+
+ggplot(dataset) +
+  geom_boxplot(aes(x = Sedim, y = log(Density), fill = Sedim))
+ggplot(dataset) +
+  geom_boxplot(aes(x = Bathy_c, y = log(Density), fill = Bathy_c)) +
+  facet_wrap(~Sedim)
+
+ggplot(dataset) +
+  geom_boxplot(aes(x = Year, y = log(Density)), fill = "cyan")
+
+```
+```{r RFigCovEffectPositive, out.width='100%', fig.cap='(ref:RFigCovEffectPositiveCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+# Distribution among factors
+glog <- ggplot(dataset) +
+  geom_boxplot(aes(x = Bathy_c, y = log(Density), fill = Bathy_c)) +
+  facet_wrap(~Sedim) +
+  theme(legend.position = "bottom")
+glog
+
+```
+```{r R_CovEffectPositive.S, purl=purl.S, eval=eval.S}
+# _Covariates potential effect ----
+# Plot the data by class of factors
+coplot(dataset$Density ~ dataset$Bathy | dataset$Sedim)
+pairs(Density ~ Bathy * Sedim, data = dataset)
+
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Density))
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+
+# Boxplots
+boxplot(dataset$Density)	
+boxplot(dataset$Density ~ dataset$Bathy_c)
+boxplot(dataset$Density ~ dataset$Bathy_c*dataset$Sedim,
+        border = rep(1 + 1:length(unique(dataset$Bathy_c)),
+                     length(unique(dataset$Sedim))))
+
+```
+
+```{r R_DistribDataPositive, purl=(Action == "Purl"), eval=(Action == "Purl"), results='hide', fig.keep='none'}
+# _Distribution type of the data ----
+# Tests of normality
+par(mfrow = c(1,2))
+qqnorm(dataset$Density) ; qqline(dataset$Density, col = "red")
+qqnorm(log(dataset$Density + 1)) ; qqline(log(dataset$Density + 1), col = "red")
+
+# Log-Normal ?
+par(mfrow = c(2, 2))
+tmp <- tapply(log(dataset.posit$Density), dataset.posit$Bathy_c, 
+              function(x) {
+                qqnorm(x)
+                qqline(x, col = "red")
+              })
+
+# Gamma ?
+par(mfcol = c(4, 4))
+tapply(dataset.posit$Density, list(dataset.posit$Bathy_c, dataset.posit$Sedim), 
+       function(x) {
+         if (length(x) <= 1) {plot(1, 1)
+           } else {
+             Gamma.Hist(x)
+           }
+       })
+
+# Relation  mean (mu) / variance (V) 
+# (Gauss: V=cste; Poisson: V=mu; Gamma and lognormal: V=mu^2)
+# To be assessed by combination of significant factors
+dataset.MuVar <- filter(dataset, Density > 0) %>%
+  group_by(Sedim, Bathy_c, Year) %>%
+  summarize(mean = mean(Density), variance = var(Density))
+
+ggplot(dataset.MuVar) +
+  geom_point(aes(x = mean, y = variance)) +
+  stat_function(fun = function(x) x, aes(col = "y=x")) + 
+  stat_function(fun = function(x) 100*x, aes(col = "y=100*x")) + 
+  stat_function(fun = function(x) x^2, aes(col = "y=x^2"))
+
+```
+```{r R_InteractionsPositive.T, eval=purl.T, purl=purl.T, fig.keep='none'}
+# _Interactions between covariates ----
+# log density
+par(mfrow = c(2, 2))
+interaction.plot(x.factor = dataset$Bathy_c,  trace.factor = dataset$Year,
+                 response = log(dataset$Density))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Year,
+                 response = log(dataset$Density),  col = rainbow(15))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Bathy_c,
+                 response = log(dataset$Density) )
+
+```
+
+```{r EN_FitModel, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('
+### Best model selection
+Data exploration and AIC lead to the choice of a model with a log-normal data transformation. When orking with continuous covariates (like bathymetry here), the relationship with observations may be not linear. With GLM, it is possible to using polynoms of different degrees to account for non linearity of the response.  
+The residual analysis of the chosen model shows rather satisfying results ', 
+if (Version == "Teacher") {'(Fig. \\@ref(fig:RFigBestModelPositive))'},'.
+', sep = "")
+```
+```{r FR_FitModel, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('
+### Sélection du meilleur modèle
+L\'exploration des données et le critère d\'Akaike conduisent à choisir une distribution log-normale pour les données. En travaillant avec des covariables continues (comme ici la bathymétrie), il est possible que la relation avec les observations ne soit pas linéaire. Dans le cadre des GLM, vous pouvez utiliser des polynômes de différents degrés pour intégrer la non-linéarité de la réponse.  
+L\'analyse des résidus sur le modèle sélectionné montre des résultats plutôt satisfaisant ', 
+if (Version == "Teacher") {'(Fig. \\@ref(fig:RFigBestModelPositive))'},'.
+', sep = "")
+```
+
+```{r FigBestModelPositiveCap, eval=(Version == "Teacher"), results='asis'}
+cat(ifelse(lang == "EN", '
+(ref:RFigBestModelPositiveCap) Diagnostic plots of the best model chosen  
+', 
+'
+(ref:RFigBestModelPositiveCap) Figures de diagnostic du meilleur modèle sélectionné  
+'), sep = "")
+```
+
+```{r R_FitPositive.T, eval=purl.T, purl=purl.T}
+# Fitting GLM on positive data =================================================
+# Try a Gamma distribution
+null.m <- glm(Density ~ 1, family = Gamma, data = dataset)
+Densposit1.glm <- stepAIC(null.m, Density ~ (Bathy_c + Sedim + Year) ^ 2,
+                          data = dataset, direction = "both")
+
+Densposit1.glm <- glm(Density ~ Bathy_c + Year, family = Gamma, data = dataset)
+
+par(mfrow = c(2, 2))
+plot(Densposit1.glm, which = c(1, 2, 3, 4))
+
+# Poisson (or quasi poisson)
+null.m <- glm(round(Density) ~ 1, family = poisson, data = dataset)
+Densposit2.glm <- stepAIC(null.m, Density ~ (Bathy_c + Sedim + Year) ^ 2,
+                           data = dataset, direction = "both")
+
+par(mfrow = c(2, 2))
+plot(Densposit2.glm, which = c(1, 2, 3, 4))
+
+# Gaussian on log-transformed values
+null.m <- glm(log(Density) ~ 1, data = dataset)
+Densposit3.glm <- stepAIC(null.m, log(Density) ~ (Bathy + Sedim + Year) ^ 2,
+                          data = dataset, direction = "both")
+
+Densposit3.glm <- glm(log(Density) ~ poly(Bathy, 3) + Sedim,
+                      family = gaussian, data = dataset)
+
+# Analyse of model goodness of fit and residuals
+par(mfcol = c(2, 2))
+plot(Densposit3.glm, which = c(1, 2, 3, 4))
+
+# Compare AIC
+AIC(Densposit1.glm)
+AIC(Densposit2.glm) # Be careful with data transformation !
+AIC(Densposit3.glm) + 2 * sum(log(dataset$Density))
+
+```
+
+```{r RFigBestModelPositive, out.width='100%', fig.cap='(ref:RFigBestModelPositiveCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+# _Additionnal analysis of residuals of the chosen model ----
+model <- glm(log(Density) ~ poly(Bathy, 3) + Sedim,
+             family = gaussian, data = dataset)
+# Standardised Pearson residuals vs fitted
+# => Test for the Homogeneity of the variance
+g1 <- ggplot(data.frame(fitted = fitted(model),
+                        residuals = rstandard(model, type = "pearson")),
+             aes(fitted, residuals)) +
+  geom_point() +
+  geom_smooth()
+
+# Residuals of Standardised Deviance vs fitted
+# => Test for Normality and for influence of observations
+g2 <- ggplot(data.frame(residuals = rstandard(model, type = "pearson"))) +
+  geom_qq(aes(sample = residuals)) +
+  geom_abline(slope = 1, intercept = 0, col = "red")
+
+# Cook's distance
+# => Influence of each observation on parameters estimation
+g3 <- ggplot(data.frame(x = 1:nrow(dataset), cook = cooks.distance(model)), aes(x, cook)) +
+  geom_bar(stat = "identity")
+
+# Data vs Fitted
+g4 <- ggplot(data.frame(data = log(dataset$Density), fitted = fitted(model)),
+             aes(data, fitted)) +
+  geom_point() +
+  geom_smooth() +
+  geom_abline(slope = 1, intercept = 0, col = "red")
+
+gridExtra::grid.arrange(g1, g2, g3, g4, ncol = 2)
+
+```
+```{r R_FitPositive.S, eval=purl.S, purl=purl.S}
+# Fitting GLM on positive data =================================================
+# Try a Gamma distribution
+Densposit1.glm <- glm(..., family = Gamma, data = dataset)
+
+par(mfrow = c(2, 2))
+plot(Densposit1.glm, which = c(1, 2, 3, 4))
+
+# Poisson (or quasi poisson)
+Densposit2.glm <- glm(round(Density) ~ 1, family = poisson, data = dataset)
+
+par(mfrow = c(2, 2))
+plot(Densposit2.glm, which = c(1, 2, 3, 4))
+
+# Gaussian on log-transformed values
+Densposit3.glm <- glm(log(Density) ~ ..., data = dataset)
+
+# Analyse of model goodness of fit and residuals
+par(mfcol = c(2, 2))
+plot(Densposit3.glm, which = c(1, 2, 3, 4))
+
+# Compare AIC
+AIC(Densposit1.glm, Densposit2.glm, Densposit3.glm)
+
+# _Additionnal analysis of residuals of the chosen model ----
+model <- ...
+# Standardised Pearson residuals vs fitted
+# => Test for the Homogeneity of the variance
+plot(fitted(model), rstandard(model, type = "pearson"),
+     main = "Res. Pearson STD vs Pred.")
+
+# Residuals of Standardised Deviance vs fitted
+# => Test for Normality and for influence of observations
+qqnorm(rstandard(model, type = "deviance"), ylim = c(-3, 3),
+       main = "Normal Q-Q plot sur Res. deviance std.")
+qqline(rstandard(model, type = "deviance"), col = "red")
+
+# Cook's distance
+# => Influence of each observation on parameters estimation
+barplot(cooks.distance(model))
+
+# Data vs Fitted
+plot(log(dataset$Density), fitted(model))
+abline(b = 1, a = 0, col = "red")
+
+```
+
+```{r EN_CrossValidationPositive, eval=(lang == "EN"), results='asis'}
+cat('
+### Validation of the model
+Using the different indices presented before to choose a model will give you the model that fit the best to your dataset. This means that this will be a good model to describe your observations. In our case, we want to use the model for predictions, which requires the model to be able to provide good predictions on data not used in the model. To do that, we can use a cross-validation approach:
+
+- Fit the model on 90% of the dataset for instance
+- Use the fitted model to predict on the remaining 10%
+- Compare predictions with observations
+- Choose the model that have the best indice of comparison
+
+You could use the coefficient of correlation between observations and validation data as an indice of goodness of fit to choose among the different models. However, the Mean Squared Error (MSE) or its Root (RMSE) is the recommended indice. This measure the mean distance between observations and their prediction.  ',
+if (Version == "Teacher") {paste0('
+A k-fold cross-validation is one of the best ways to compute the cross-validation. The $k = 10$ fold cross-validation is one of the most used. This divides the dataset into 10 fold and repeat the cross-validation for each of the 10 fold used as validation sub-dataset (Fig. \\@ref(fig:figCrossValidationPositive)).
+In our case, the cross-validation is a little tricky because we have repetition of observations in stations between different years. If interannual variations are small, all observations on the same station are equivalent, thus the validation sub-dataset may be similar to the fitting dataset, thus conducting to a case where validation is not interesting. ', styleFmt("Be careful with your cross-validation if there is suspicion of high correlation between your data !", "advert"), ' To avoid that, we need to select the validation sub-dataset in a wiser way...
+
+(ref:figCrossValidationPositiveCap) Illustration of the selection of sub-datasets for the 10-fold cross-validation procedure  
+  
+')}, '
+- ', styleFmt("Is the model selected with AIC still the best model when considering the RMSE ?", "exo"),'
+', sep = "")
+```
+```{r FR_CrossValidationPositive, eval=(lang == "FR"), results='asis'}
+cat('
+### Validation du modèle
+En utilisant les différents indices présenté précédemment, vous choisissez le modèle qui s\'ajuste le mieux à vos données. C\'est donc le meilleur modèle pour décrire vos observations. Dans notre cas, nous souhaitons aussi utiliser ce modèle pour faire de la prédiction, ce qui nécessite de sélectionner un modèle qui donne de bonnes prédictions sur des données non-utilisées pour l\'ajustement du modèle. Pour cela, nous pouvons utiliser la validation croisée :
+
+- Ajuster un modèle sur 90% des données par exemple
+- Utiliser le modèle ajusté pour faire une prédiction pour les 10% restants
+- Comparer les prédictions aux observations
+- Choisir le modèle ayant le meilleur indice de comparaison
+
+Vous pourriez utiliser le coefficient de corrélation entre les prédictions et les données de validation comme un indice de qualité d\'ajustement pour sélectionner le meilleur modèle. Cependant, l\'erreur quadratique moyenne (MSE = Mean Squared Error) voire sa racine (RMSE = Root MSE) est l\'indice recommandé. Il mesure la distance moyenne d\'une observation à sa prédiction.  ',
+if (Version == "Teacher") {paste0('
+La validation croisée en k-parties est une des meilleurs façons de faire de la validation croisée. La validation croisée en $k = 10$ parties est l\'une des plus utilisées. Elle divise le jeu de données en 10 parts égales et répète la validation croisée pour chacune des 10 sous-parties utilisées comme jeu de données de validation (Fig. \\@ref(fig:figCrossValidationPositive)).  
+Dans notre cas, la validation croisée est un peu délicate car nous avons des répétitions d\'observations sur chaque station échantillonnée plusieurs années de suite. Si la variabilité inter-annuelle est faible, toutes les données d\'une même station seront égales et donc les données de validation seront similaires aux données d\'ajustement, rendant la validation croisée peu intéressante. ', styleFmt("Soyez donc prudents avec la validation croisée lorsqu\'il y a suspicion de forte corrélation de vos données !", "advert"), ' Pour passer outre ce problème de corrélation, il faut sélectionner les données de validation de manière judicieuse...
+
+(ref:figCrossValidationPositiveCap) Illustration de la sélection de jeux de données de validation pour une validation croisée en 10 parties  
+  
+')},'
+- ', styleFmt("Le modèle sélectionné sur la base de l\'AIC est-il toujours le meilleur modèle avec le RMSE ?", "exo"),'
+', sep = "")
+```
+
+```{r figCrossValidationPositive, out.width='50%', fig.cap='(ref:figCrossValidationPositiveCap)', fig.align='center'}
+knitr::include_graphics(paste0(figDeltaWD, "/Cross_Validation.png"))
+```
+
+```{r R_CrossValidationPositive, eval=(Action == "Purl"), purl=TRUE, fig.keep='none', results='hide'}
+# _Validation of the model on Years 2000-2003 ----
+calib.dataset <- dataset[-which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+valid.dataset <- dataset[which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+Dens.valid.glm <- glm(log(Density) ~ poly(Bathy, 3) + Sedim,
+             family = gaussian, data = calib.dataset)
+valid.fit <- predict(Dens.valid.glm,
+                     newdata = valid.dataset, type = "response")
+
+# Expected mean of the density (if glm() on LOG-TRANSFORMED DATA has been used)
+# The so-called Laurent correction
+var.logdens.pos <- var(residuals(Dens.valid.glm))
+valid.fit.corrected <- exp(valid.fit + 0.5 * var.logdens.pos)
+
+# figure
+qplot(valid.dataset$Density, valid.fit.corrected) +
+  geom_abline(slope = 1, intercept = 0, col = "red")
+
+# Pearson coefficient
+cor(valid.dataset$Density, valid.fit, method = "pearson")
+# If log-transformed data
+cor(valid.dataset$Density, valid.fit.corrected, method = "pearson")
+
+# MSE
+MSE <- mean((valid.dataset$Density - valid.fit.corrected)^2)
+RMSE <- sqrt(MSE) 
+
+```
+

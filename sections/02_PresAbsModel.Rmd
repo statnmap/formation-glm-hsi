@@ -1,0 +1,436 @@
+```{r LibrariesPA, purl=TRUE}
+# Presence-Absence Model =======================================================
+# Additionnal libraries ----
+library(pROC)
+
+```
+
+```{r EN_PresentationPA, eval=(lang == "EN"), results='asis'}
+cat('
+## Binomial sub-model
+### Outlines
+The procedure followed on the complete dataset should be used again on the sub-dataset.
+
+- Create presence-absence observations from the dataset
+- Explore the new sub-dataset ', 
+if (Version == "Teacher") {'(Fig. \\@ref(fig:RFigDataBalancePA))'},'
+- Use a binomial distribution
+    + Test for covariates, interactions, link functions, quality criterion
+- Choose the best model
+
+### Exploration
+',
+sep = "")
+```
+```{r FR_PresentationPA, eval=(lang == "FR"), results='asis'}
+cat('
+## Sous-modèle Binomial
+### Étapes
+La procédure à adopter avec le sous-groupe de données est la même qu\'avec le jeu de données complet.
+
+- Créer les observations de présence-absences à partir du jeu de données
+- Explorer ce nouveau jeu de données ', 
+ifelse(Version == "Teacher", '(Fig. \\@ref(fig:RFigDataBalancePA))', ''),'
+- Utiliser une distribution binomiale
+    + Tester les covariables, les interactions, les fonctions de lien, les critères de qualité
+- Choisir le meilleur modèle
+
+### Exploration
+',
+sep = "")
+```
+
+```{r R_LoadDataPA.T, purl=purl.T, results='hide'}
+# Get data =====================================================================
+# Load Coastlines shapefile
+Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84") 
+
+# Load the data shapefile
+# dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+```
+```{r R_LoadDataPA.S, purl=purl.S, eval=eval.S}
+# Get data =====================================================================
+# Load Coastlines shapefile
+Coasts_Vilaine_wgs84 <- readOGR(...) 
+
+# Load the data shapefile
+Stations_covariates_wgs84 <- readOGR(...)
+names(Stations_covariates_wgs84)[9:16] <- 
+  c("SeaLim", "Coast", "Zone_bio", "Sedim", "id", "Bathy", "Pente", "TPI")
+
+```
+
+```{r R_PrepareDataPA.T, purl=purl.T, results='hide'}
+# Transform to non-spatial dataset
+dataset.tmp <- as.tbl(Stations_covariates_wgs84@data)
+dataset.tmp
+dim(dataset.tmp)
+summary(dataset.tmp)
+
+# Clean dataset
+names(dataset.tmp) <- gsub("_pt", "", names(dataset.tmp))
+
+# Add a new covariate: bathymetry as class factor covariate
+# c("1depth < 5 m", "2depth 5 - 10 m", "3depth 10 - 20 m", "4depth 20 - 50 m")
+dataset.orig <- dataset.tmp %>%
+  mutate(Bathy_c = 
+           cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+               labels = c("1depth < 5m", "2depth 5-10m",
+                          "3depth 10-20m", "4depth 20-50m"),
+               include.lowest = TRUE)) %>%
+  # dplyr::select(-matches("coords"), -optional, -id) %>%
+  dplyr::select(lat:Density, Sedim, Bathy, Bathy_c) %>%
+  mutate(Year = as.factor(as.character(Year)),
+         Presence = 1*(Density > 0))
+
+dataset <- dataset.orig
+rm(dataset.tmp)
+
+```
+```{r R_PrepareDataPA.S, purl=purl.S, eval=eval.S}
+# Transform to non-spatial dataset
+dataset <- as.tbl(Stations_covariates_wgs84@data)
+
+# Clean dataset names
+names(dataset) <- gsub("_pt", "", names(dataset))
+
+# Add a new covariate: bathymetry as class factor covariate using cut
+# c("1depth < 5m", "2depth 5-10m", "3depth 10-20 m", "4depth 20-50 m")
+dataset$Bathy_c <- cut(
+  -dataset$Bathy, 
+  breaks = c(min(-dataset$Bathy), 5, 10, 20, 50),
+  labels = c("1depth < 5m", "2depth 5-10m", "3depth 10-20 m", "4depth 20-50 m"),
+  include.lowest = TRUE
+)
+# Add a new column for Presence-absence
+dataset$Presence <- ...
+
+```
+
+```{r R_DataBalancePA, purl=purl.T, results='hide', fig.keep='none'}
+# Explore Presence/Absence data ================================================
+# _Balance of data against covariates ----
+table(dataset$Presence)
+table(dataset$Presence, dataset$Bathy_c)
+table(dataset$Presence, dataset$Sedim)
+table(dataset$Presence, dataset$Year)
+
+# _Covariates potential effect ----
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Presence),
+                 bins = 30, fill = "cyan", col = "grey20")
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+g + facet_wrap(~Sedim)
+g_hist <- g + facet_grid(Sedim ~ Bathy_c)
+
+ggplot(dataset) +
+  geom_histogram(aes(log(Presence + 1)),
+                 bins = 30, fill = "orange", col = "grey40") +
+  facet_grid(Bathy_c ~ Sedim)
+
+# Mean by class of factor
+ggplot(dataset, aes(Year, Presence)) + 
+  stat_summary(fun.y = mean, geom = "bar", fill = "grey70")
+
+ggplot(dataset, aes(Bathy_c, Presence)) + 
+  stat_summary(fun.y = mean, geom = "bar", fill = "grey70") +
+  facet_wrap(~Sedim)
+
+# _Interactions between covariates ----
+par(mfrow = c(2, 2))
+interaction.plot(dataset$Bathy_c, dataset$Year, dataset$Presence)
+interaction.plot(dataset$Year, dataset$Sedim, dataset$Presence)
+interaction.plot(dataset$Sedim, dataset$Bathy_c, dataset$Presence)
+
+```
+```{r R_DataBalancePA.S, purl=purl.S, eval=eval.S}
+# Explore Presence/Absence data ================================================
+# _Balance of data against covariates ----
+table(dataset$Presence)
+table(...)
+
+# _Covariates potential effect ----
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Presence))
+plot(g)
+
+# Mean by class of factor
+barplot(tapply(dataset$Presence, dataset$Year, mean), 
+        xaxt = "n", space = 0)
+axis(1, at = 1:length(levels(dataset$Year)) - 0.5,
+     labels = levels(dataset$Year), cex.axis = 0.6)
+
+# _Interactions between covariates ----
+interaction.plot(...)
+
+```
+```{r RFigDataBalancePACap, eval=(Version == "Teacher"), results='asis'}
+cat('  
+', ifelse(lang == "EN",
+'(ref:RFigDataBalancePACap) Balance of observations against Bathymetry and Sediment',
+'(ref:RFigDataBalancePACap) Répartition des observations en fonction de la bathymetry et des sédiments'), '  
+'
+)
+
+```
+
+```{r RFigDataBalancePA, eval=(Version == "Teacher"), fig.cap='(ref:RFigDataBalancePACap)', fig.align='center', out.width='80%'}
+g_hist
+```
+
+```{r EN_FitPA, eval=(lang == "EN"), results='asis'}
+cat('
+### Fit a binomial model with a link function
+The choice of a distribution for presence-absence data is simple, this is a binomial distribution. However, a model is generally fitted using a Gaussian residuals distribution. To fit a binomial model, data must be transformed so that they can be fitted in a classical linear model with Gaussian distribution. For that, we use a link function. The classical link function for binomial models is logit but it is not the only one. You may want to try cloglog, probit or cauchit.  ',
+if (Version == "Teacher") {'
+The logit function is the following (Fig. \\@ref(fig:RFigLinkPA)): 
+$$logit(p) = log \\left( p \\over {1 - p}  \\right)$$
+This function transforms values in [0;1] to values in [-Inf;Inf], so that the fitted model will:
+$$logit(p) = Covariate1 + Covariate2 + N(0, \\sigma)$$
+where $p$ is the probability of presence retrieved with the inverse function ($logit^{-1}$).  
+  
+(ref:RFigLinkPACap) Different possible link functions for binomial model  
+  
+Analysis of residuals of a binomial model is also to be done, even if there is no really choice in the distribution. Visual outputs of residuals analysis of a binomial model are specific (Fig. \\@ref(fig:RFigOutputsPA)).
+
+(ref:RFigOutputsPACap) Residual analysis of a binomial model  
+
+'}, sep = "")
+```
+```{r FR_FitPA, eval=(lang == "FR"), results='asis'}
+cat('
+### Ajuster un modèle binomial avec une fonction de lien
+Le choix de la distribution pour un modèle de présence-absence est simple, c\'est un modèle binomial. Cepedant, un modèle est généralement ajusté sur la base de résidus Gaussiens. Pour ajuster un modèle binomial, les données doivent être transformées de telle sorte qu\'on puisse ajuster un modèle linéaire Gaussien classique dessus. Pour cela, nous utilisons une fonction de lien. La fonction de lien classique d\'un modèle binomial est la fonction logit, mais ce n\'est pas la seule. Vous pouvez tester cloglog, probit ou cauchit.  ',
+if (Version == "Teacher") {'
+La fonction logit est la suivante (Fig. \\@ref(fig:RFigLinkPA)): 
+$$logit(p) = log \\left( p \\over {1 - p}  \\right)$$
+Cette fonction tranforme les valeurs dans l\'intervalle [0;1] en valeurs dans [-Inf;Inf], de telle sorte que le modèle ajusté soit :
+$$logit(p) = Covariate1 + Covariate2 + N(0, \\sigma)$$
+où $p$ est la probabilité de présence que l\'on peut retrouver après ajustement en utilisant la fonction inverse ($logit^{-1}$).  
+  
+(ref:RFigLinkPACap) Différentes fonctions de lien possibles pour un modèle binomial
+  
+L\'analyse des résidus d\'un modèle binomial est aussi à faire, même si on n\'a pas vraiment le choix du modèle. Les sorties graphiques sont particulières à analyser (Fig. \\@ref(fig:RFigOutputsPA)).  
+  
+(ref:RFigOutputsPACap) Analyse des résidus d\'un modèle binomial   
+
+'}, sep = "")
+```
+
+```{r RFigLinkPA, eval=(Version == "Teacher"), fig.cap='(ref:RFigLinkPACap)', fig.align='center', out.width='60%', fig.width=6, fig.height=8}
+ggplot(data.frame(p = c(0.0001, 0.9999)), aes(p)) +
+  stat_function(fun = stats::make.link("logit")$linkfun, 
+                aes(colour = "logit")) +
+  stat_function(fun = stats::make.link("cloglog")$linkfun, 
+                aes(colour = "cloglog")) + 
+  stat_function(fun = stats::make.link("probit")$linkfun, 
+                aes(colour = "probit")) +
+  stat_function(fun = stats::make.link("cauchit")$linkfun, 
+                aes(colour = "cauchit"),
+                xlim = c(0.04, 0.96)) +
+  guides(colour = guide_legend(title = "Link functions"))
+```
+
+```{r R_FitPA.T, purl=purl.T, results='hide'}
+# Fitting a Bernoulli model on presence/absence data ===========================
+# _Fit ----
+null.m <- glm(Presence ~ 1, family = binomial, data = dataset)
+Dens01.glm <- stepAIC(null.m, Presence ~ (Bathy + Bathy_c + Sedim + Year) ^ 2,
+                      data = dataset, direction = "both")
+
+Dens01.glm <- glm(Presence ~ Bathy + Sedim, family = binomial, data = dataset)
+
+# Change the link function ?
+# Compare different options ?
+Dens02.glm <- glm(Presence ~ Bathy + Sedim,
+                  family = binomial(link = "cloglog"), data = dataset)
+Dens03.glm <- glm(Presence ~ Bathy + Sedim, 
+                  family = binomial(link = "probit"), data = dataset)
+
+AIC(Dens01.glm, Dens02.glm, Dens03.glm)
+
+model <- Dens01.glm
+
+```
+```{r R_FitPA.S, eval=purl.S, purl=purl.S}
+# Fitting a Bernoulli model on presence/absence data ===========================
+# _Fit ----
+Dens01.glm <- glm(Presence ~ ..., family = binomial, data = dataset)
+
+# Change the link function ?
+Dens02.glm <- glm(Presence ~ ...,
+                  family = binomial(link = "cloglog"), data = dataset)
+
+model <- ...
+
+```
+
+```{r RFigOutputsPA, purl=TRUE, fig.cap='(ref:RFigOutputsPACap)', fig.align='center', out.width='80%', results='hide'}
+# _Outputs ----
+# Anova
+summary(model)
+anova(model, test = "Chisq")
+
+# % explained deviance
+pc_dev_expl <- anova(model)[-1, 2] * 100 / anova(model)[1, 4]
+# % explained per factor
+print(cbind(rownames(anova(model))[-1], round(pc_dev_expl , digit = 1)))
+# % explained per df
+print(cbind(rownames(anova(model))[-1], 
+            round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+
+# Residuals
+par(mfrow = c(2, 2))
+plot(model, which = c(1, 2, 3, 4))
+
+```
+
+```{r R_OtherFig, purl=purl.T, fig.keep='none'}
+# _Others interesting graphs ----
+dataset.pred <- dataset %>% 
+  mutate(PredictPA = c(model$fitted),
+         ResidPA = c(resid(model, type = "response")))
+
+# Fitted vs Observed
+ggplot(dataset.pred) +
+  geom_histogram(aes(PredictPA, fill = factor(Presence))) +
+  facet_wrap(~ Presence) +
+  guides(fill = FALSE)
+
+gpred <- ggplot(dataset.pred) +
+  geom_violin(aes(factor(Presence), PredictPA),
+              draw_quantiles = 0.5)
+gpred
+
+# Repartition of residuals against covariates
+ggplot(dataset.pred) +
+  geom_histogram(aes(ResidPA)) +
+  facet_wrap(~ Bathy_c)
+
+# Same with violin boxplots
+ggplot(dataset.pred) + 
+  geom_violin(aes(Bathy_c, PredictPA),
+              draw_quantiles = 0.5)
+
+ggplot(dataset.pred) + 
+  geom_violin(aes(Bathy_c, ResidPA))
+
+```
+
+```{r EN_AUCPA, eval=(lang == "EN"), results='asis'}
+cat('
+### Goodness of fit with binomial models
+A commonly used index to determine the goodness of fit with binomial models is the Area Under the Curve (AUC). As an aim of doing binomial model is to predict success-fail, and not only probability of success, user may want to define a threshold value (intuitively 0.5 for instance) that transform probability of presence into presence or absence. The AUC is somehow the probability to correctly classify presences and absences. A more complete definition would be: 
+
+> The mean probability that for one observation=1 and one observation=0 randomly selected in dataset the probability of presence predicted for the observation=1 is higher than the one for observation=0  
+
+Indeed, $AUC = 1$ would be a "perfect" model, but $AUC = 0.5$ would not be better than random.  
+', if (Version == "Teacher") {' This is called Area Under the Curve because it is calculated from a ROC curve (Receiving Operating Characteristic) that compares the true positive rate (sensitivity) to the false positive rate (specificity) at various threshold values (Fig. \\@ref(fig:RFigAUCPA)).
+
+(ref:RFigAUCPACap) (a) Prediction vs Observations. (b) ROC Curve of a binomial model
+
+'},'
+')
+```
+```{r FR_AUCPA, eval=(lang == "FR"), results='asis'}
+cat('
+### Qualité d\'ajustement d\'un modèle binomial
+Une mesure couramment utilisée pour la qualité d\'ajustement d\'un modèle binomial est "l\'aire sous la courbe" (AUC : Area Under the Curve). Un objectif des modèles binomiaux étant de prédire un succès ou un échec, et non pas seulement une probabilité de succès, on peut vouloir définir un seuil (intuitivement 0.5 par exemple) qui transforme la probabilité de présence en présence ou absence. L\'AUC est en quelque sorte une probabilité de classer correctement les présences et absences. Une définition plus complète serait :
+
+> La probabililité moyenne pour qu\'une observation=1 et une observation=0 choisies de manière aléatoire dans le jeu de données montrent une probabilité de présence prédite supérieure pour l\'observation=1 par rapportà celle de l\'observation=0  
+
+Ainsi, $AUC = 1$ montrerait un modèle "parfait", mais $AUC = 0.5$ montrerait un modèle plus mauvais que le hasard.  
+', if (Version == "Teacher") {' L\'AUC s\'appelle ainsi parce qu\'elle est calculée à partir d\'une courbe "ROC" (Receiving Operating Characteristic) qui compare le taux de vrais positifs (sensitivity) au taux de faux positifs (specificity) pour différentes valeurs de seuil (Fig. \\@ref(fig:RFigAUCPA)).
+
+(ref:RFigAUCPACap) (a) Prédiction vs Observations. (b) Courbe ROC d\'un modèle binomial  
+
+'},'
+')
+```
+
+```{r R_AUCPA, purl=TRUE, fig.keep='none', results='hide'}
+# _Area under the curve ----
+calc.roc <- roc(dataset$Presence, fitted(model))
+plot(calc.roc, auc.polygon = TRUE)
+auc(calc.roc)
+
+```
+```{r RFigAUCPA, out.width='90%', fig.cap='(ref:RFigAUCPACap)', fig.align='center', fig.width=8, fig.height=4, fig.keep='last', results='hide'}
+# ROC with ggplot
+ROC <- data.frame(specificity = calc.roc$specificities, 
+                  sensitivity = calc.roc$sensitivities) %>%
+  arrange(sensitivity)
+
+groc <- ggplot(ROC) + 
+  geom_area(aes(specificity, sensitivity),
+            col = "grey20", fill = "grey80",
+            position = "identity") +
+  geom_abline(slope = 1, intercept = 1, col = "grey60") + 
+  scale_x_reverse()
+
+
+g <- cowplot::plot_grid(gpred, groc, labels = c("(a)", "(b)"), ncol = 2)
+g
+rm(g);dev.off()
+```
+
+```{r EN_BestThdPA, eval=(lang == "EN"), results='asis'}
+cat('
+### Selection of best threshold
+There are 
+  ',
+sep = "")
+```
+```{r FR_BestThdPA, eval=(lang == "FR"), results='asis'}
+cat('
+### Choix du meilleur seuil
+  ',
+sep = "")
+```
+
+```{r EN_CrossValidationPA, eval=(lang == "EN"), results='asis'}
+cat('
+### Validation of the model
+Similarly to the model on positive data, we can use the k-fold cross-validation to select the best model in terms of prediction qualities. For binomial models, you can use the AUC on the validation dataset as an indice of goodness of fit to choose among our different models.  ',
+sep = "")
+```
+```{r FR_CrossValidationPA, eval=(lang == "FR"), results='asis'}
+cat('
+### Validation du modèle
+De même que pour le modèle sur les données positives, vous pouvez utiliser la validation croisée en $k$ parties pour sélectionner le meilleur modèle en terme de prédiction. Pour un modèle binomial, vous pouvez utiliser l\'AUC sur le jeu de données de validation comme un indice de qualité d\'ajustement.  ',
+sep = "")
+```
+```{r R_CrossValidationPA.T, purl=purl.T, eval=purl.T}
+# _Validation of the model on Years 2000-2003 ----
+calib.dataset <- dataset[-which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+valid.dataset <- dataset[which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+Dens01.valid.glm <- glm(Presence ~ Bathy + Sedim,
+                        family = binomial, data = calib.dataset)
+valid.fit <- predict(Dens01.valid.glm,
+                     newdata = valid.dataset, type = "response")
+
+# Area under the curve on validation
+valid.roc <- roc(valid.dataset$Presence, valid.fit)
+plot(valid.roc, auc.polygon = TRUE)
+auc(valid.roc)
+
+```
+```{r R_CrossValidationPA.S, purl=purl.S, eval=eval.S}
+# _Validation of the model ----
+calib.dataset <- ...
+valid.dataset <- ...
+Dens01.valid.glm <- glm()
+valid.fit <- ...
+
+# Cross-validation quality indice
+
+```

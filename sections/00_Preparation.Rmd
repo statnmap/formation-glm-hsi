@@ -1,0 +1,119 @@
+
+```{r Directory_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'# Preparation
+## Directory structure\n',
+styleFmt("This is always better to keep original files. With GIS, reprojections partially alter original information. It may be useful to retrieve original files.", "advert"),
+'\n\nThe structure of your working directory is the following:
+', sep = "")
+```
+
+```{r Directory_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'# Préparation
+## Structure des dossiers\n',
+styleFmt("Il convient de toujours conserver les fichiers originaux : les reprojections entraînent toujours quelques pertes, mieux vaut revenir aux originaux lorsque c'est possible.", "advert"),
+'\n\nL\'arborescence de votre dossier de travail est la suivante :
+', sep = "")
+```
+
+- `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` 01_Original_data
+    + `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` DEPARTEMENTS
+    + `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` Sedim_GDG_wgs84
+    + `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-file_Blue_12px.png'), dpi = 1000)` bathy_GDG_1000_merc (and co)
+    + `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-file_Blue_12px.png'), dpi = 1000)` Data_Vilaine_solea.csv
+- `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` 02_Outputs
+- `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` 03_Figures
+- `r knitr::include_graphics(paste0(fig.auto.WD, '/icon-folder_Blue_12px.png'), dpi = 400)` 04_Functions
+
+```{r R_Clean-Memory, purl=TRUE, eval=(Action == "Purl")}
+# Clean memory
+# rm(list = ls())
+
+```
+
+```{r R_Load-Libraries, purl=TRUE}
+# Load libraries ---------------------------------------------------------------
+library(sp)
+library(rgdal)
+library(raster)
+library(maps)
+library(mapdata)
+library(dplyr)
+library(here)
+
+```
+
+```{r Start-with-R_EN, eval=(lang == "EN"), results='asis'}
+cat('
+## Start with R\n',
+'- Create a Rstudio project in the main folder.
+- Open the R script file: ', paste0("\"",Case, "_", Version, ".R\""), '\n',
+'- Define working directories at the beginning of the script.
+')
+```
+```{r Start-with-R_FR, eval=(lang == "FR"), results='asis'}
+cat('
+## Débutons avec R\n',
+'- Créer un projet Rstudio dans le dossier principal de travail.
+- Ouvrez le script R : ', paste0("\"", Case, "_", Version, ".R\""), '\n',
+'- Lister les différents sous-dossier de travail au début de votre script R
+')
+```
+
+```{r R_Define-WD_T, purl=purl.T}
+# Define working directories ---------------------------------------------------
+# WD <- "/mnt/Data/Formation_TD-GLM_Cours_Agro/TD_Vilaine_SIG-et-GLM_2017_01_3days"
+WD <- here()
+# Folder of original files
+origWD <- here("01_Original_data")
+# Folder for outputs
+saveWD <- here("02_Outputs")
+# Folder where to save outputs from R
+figWD <- here("03_Figures")
+# Folder where complementary functions are stored
+funcWD <- here("04_Functions")
+# Copy maintained complementary functions from local directory
+# if (file.exists("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R")) {
+#   tmp <- file.copy("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R",
+#                    paste0(funcWD, "/Map.output.fun.R"), overwrite = TRUE)
+# }
+# Manual operations
+Manuel <- FALSE
+
+```
+
+```{r R_Define-WD_S, echo=TRUE, purl=purl.S, eval=eval.S}
+# Define working directories ---------------------------------------------------
+WD <- here()
+# Folder of original files
+origWD <- here("01_Original_data")
+# Folder for outputs
+saveWD <- here("02_Outputs")
+# Folder where to save outputs from R
+figWD <- here("03_Figures")
+# Folder where complementary functions are stored
+funcWD <- here("04_Functions")
+
+```
+
+```{r R_Libraries, purl=TRUE}
+# Other libraries ----
+library(lattice) #to improve graphics
+library(MASS)
+```
+
+```{r R_Libggplot, eval=TRUE, purl=TRUE}
+library(ggplot2)
+# devtools::install_github('bhaskarvk/widgetframe')
+library(leaflet)
+library(ggmap)
+```
+
+```{r R_Source, purl=TRUE}
+
+# Download other personnal graphic functions
+source(paste0(funcWD, "/function.Gamma.Hist.R"))
+source(paste0(funcWD, "/function.chisq.gof.R"), encoding = "Latin1")
+
+```

@@ -1,0 +1,253 @@
+```{r wdfigPres}
+# Folder where to save outputs from R
+figPresWD <- here("03_Figures/00_Presentation")
+```
+
+```{r Presentation_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'# Presentation of the study  
+**',
+styleFmt("The context and objectives of your study will define the modelling approach you use on your dataset.", "advert"),
+'  
+Here, we used generalised linear models to produce an average distribution map of sole nursery in the Vilaine Bay.**  
+
+## Context
+- Coasts and estuaries are essential fish habitats
+    + Productive areas
+    + Nursery grounds
+    + Restricted area with high densities (Fig. \\@ref(fig:figPlaiceBox))',
+sep = "")
+```
+
+```{r Presentation_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'# Présentation de l\'étude  
+**', styleFmt("Le contexte et les objectifs de votre étude définissent le type de modélisation que vous allez mettre en place sur votre jeu de données.", "advert"),
+'  
+Ici, nous utilisons les modèles linéaires généralisés pour produire une carte de distribution moyenne de la nourricerie de soles communes de la baie de Vilaine**.  
+
+## Contexte
+- Les zones côtières et les estuaires sont des habitats halieutiques essentiels
+    + Zones à forte production
+    + Nourriceries
+    + Zones restreintes avec de fortes densités (Fig. \\@ref(fig:figPlaiceBox))',
+sep = "")
+```
+  
+(ref:figPlaiceBoxCap) Plaice box (Rijnsdorp _et al._)
+  
+```{r figPlaiceBox, out.width='50%', fig.cap='(ref:figPlaiceBoxCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/PlaiceBox_crop.png"))
+```
+
+```{r HighPressure_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'- High anthropic pressure
+    + Surface loss (Fig. \\@ref(fig:figHighPressure)a)
+    + Low habitat quality (Fig. \\@ref(fig:figHighPressure)b)
+
+(ref:figHighPressureCap) (a) The Seine estuary. (b) Chemical contamination along French coasts (Ifremer, 2011)
+  
+- Impact on population renewal
+    + Young stages = bottlenecks
+    + Size and quality of coastal nurseries drive juveniles production',
+sep = "")
+```
+```{r HighPressure_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'- Pression anthropique élevée
+    + Perte de surface disponibles (Fig. \\@ref(fig:figHighPressure)a)
+    + Qualité des habitats alterée (Fig. \\@ref(fig:figHighPressure)b)
+
+(ref:figHighPressureCap) (a) L\'estuaire de la Seine. (b) Niveau de contamination chimique le long des côtes françaises (Ifremer, 2011)
+  
+- Impact sur le renouvellement des populations
+    + Jeune stades = Gouleau d\'étranglement
+    + La taille et la qualité des nourriceries côtières influent sur la production de juvéniles',
+sep = "")
+```
+
+```{r figHighPressure, out.width='80%', fig.cap='(ref:figHighPressureCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/HighPressure.png"))
+```
+
+```{r Objectives_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'## Objectives
+Find factors influencing the distribution of flatfishes (_Solea solea_) in the Vilaine Bay and map the average distribution of densities.
+
+- Mapping habitat suitability requires:
+    + Knowledge on juvenile habitats
+    + Surveys in areas of interest
+    + Knowledge on potential influential covariates
+        + Exhaustive maps of covariates
+- Choosing a two step statistical approach
+    + Model statistical link between densities and covariates
+    + Prediction of juvenile habitats',
+sep = "")
+```
+```{r Objectives_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'## Objectifs
+Déterminer les facteurs ayant une influence sur la distribution des poissons plats (_Solea solea_) en Baie de Vilaine et cartographier la distribution moyenne des densités.
+
+- Cartographier les habitats potentiels nécessite:
+    + Connaissance des habitats de juvéniles
+    + Campagnes d\'échantillonnage dans la zone d\'étude
+    + Connaissance des covariables environnementales ayant potentiellement de l\'influence
+        + Cartes exhaustives des covariables environnementales
+- Une approche statistique en deux étapes
+    + Modèle statistique reliant les densités aux covariables
+    + Prédire les habitats potentiels',
+sep = "")
+```
+
+```{r Data_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'## Data
+Standardized beam trawl surveys in the Vilaine bay (Fig. \\@ref(fig:figVilaineCampaign))
+
+- 1984 – 2010
+- In autumn
+- Young-of-the-year (Age 0)
+    + Nb individuals / 1000m^2^
+
+(ref:figVilaineCampaignCap) (a) The Vilaine estuary. (b) Beam trawl. (c) Location of sampling stations.
+',
+sep = "")
+```
+```{r Data_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'## Données
+Campagne standardisée de chalut à perche dans la baie de Vilaine (Fig. \\@ref(fig:figVilaineCampaign))
+
+- 1984 – 2010
+- En autumne
+- Juvéniles de l\'année (Âge 0)
+    + Nb individus / 1000m^2^
+
+(ref:figVilaineCampaignCap) (a) L\'estuaire de la Vilaine. (b) Chalut à perche. (c) Situation des stations d\'échantillonnage.
+',
+sep = "")
+```
+
+```{r figVilaineCampaign, out.width='80%', fig.cap='(ref:figVilaineCampaignCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/Vilaine_Campaign.png"))
+```
+
+```{r Covariates_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'## Covariates
+
+- Bathymetry (Fig. \\@ref(fig:figCovariates)a)
+    + DEM with 1000m resolution
+    + Mercator projection
+
+- Sediment structure (Fig. \\@ref(fig:figCovariates)b)
+    + Polygon shapefile
+    + Geographic coordinates
+
+- Biological areas (Fig. \\@ref(fig:figCovariates)c)
+    + Combination of bathymetry, sediment and habitat
+    + Polygon shapefile
+    + Geographic coordinates
+
+(ref:figCovariatesCap) Covariates in the Vilaine bay. (a) Sediment structure, (b) Bathymetry and (c) Biological areas.
+', sep = "")
+```
+```{r Covariates_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'## Covariables
+
+- Bathymétrie (Fig. \\@ref(fig:figCovariates)a)
+    + MNT à 1000m de résolution
+    + Projection Mercator
+
+- Structure sédimentainre  (Fig. \\@ref(fig:figCovariates)b)
+    + Fichier shape de polygones
+    + Coordonnées géographiques
+
+- Zones biologiques (Fig. \\@ref(fig:figCovariates)c)
+    + Combinaison bathymétrie, sédiment, habitat
+    + Fichier shape de polygones
+    + Coordonnées géographiques
+
+(ref:figCovariatesCap) Covariables en baie de Vilaine. (a) Structure sédimentaire, (b) Bathymétrie et (c) Zones biologiques.
+', sep = "")
+```
+
+```{r figCovariates, out.width='80%', fig.cap='(ref:figCovariatesCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/Day2-02Vilaine-Covariates_abc.png"))
+```
+
+```{r HSM_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'## Fitting a species distribution model
+
+- Cross data with maps of covariates
+
+- Build the model linking observations and covariates
+    + Use of linear models
+
+- Use maps of covariates to predict (Fig. \\@ref(fig:figProcedure))
+    + A prediction for each cell of a raster
+
+(ref:figProcedureCap) Procedure for a species distribution model
+',
+sep = "")
+```
+```{r HSM_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'## Ajuster un modèle de distribution d\'espèces
+
+- Croiser les données avec les cartes de covariables
+    + Utiliser un modèle linéaire
+
+- Utiliser les cartes des covariables pour la prédiction (Fig. \\@ref(fig:figProcedure))
+    + Une prédiction pour chaque cellule d\'un raster
+
+(ref:figProcedureCap) Procédure pour un modèle de distribution d\'espèce
+',
+sep = "")
+```
+
+```{r figProcedure, out.width='70%', fig.cap='(ref:figProcedureCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/Schema_Modele.png"))
+```
+
+```{r Exploration_EN, eval=(lang == "EN"), results='asis'}
+cat(
+'## Data exploration  
+\n',
+beginStyleFmt("redbox", "p"),
+'Always explore your dataset before any analysis',
+endStyleFmt("redbox", "p"),
+'\n
+- Explore data and covariates
+    + Explore the sampling plan
+    + Explore potential link between density and covariates
+    + Explore future modeling parameters (interactions, distributions)  
+\n',
+styleFmt("Always remember the objectives of your study !", "advert"),
+'  \n\n',
+styleFmt("Question: What will we looking for in this exploration ?", "exo"),
+sep = "")
+```
+```{r Exploration_FR, eval=(lang == "FR"), results='asis'}
+cat(
+'## Exploration des données  
+\n',
+beginStyleFmt("redbox", "p"),
+'Prenez le temps d\'explorer vos données avant toutes analyses',
+endStyleFmt("redbox", "p"),
+'\n
+- Explorer les données et les covariables
+    + Explorer le plan d\'échantillonnage
+    + Explorer les liens potentiels entre les densités et les covariables
+    + Explorer les futurs paramètres de modélisation (interactions, distributions)  
+\n',
+styleFmt("Souvenez-vous toujours des objectifs de votre étude !", "advert"),
+'  \n\n',
+styleFmt("Question : Que recherchons-nous dans cette exploration ?", "exo"),
+sep = "")
+```

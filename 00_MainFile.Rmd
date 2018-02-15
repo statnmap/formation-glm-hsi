@@ -1,0 +1,118 @@
+---
+title: "`r title.lang`"
+author: "Sébastien Rochette"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+documentclass: article
+classoption: a4paper
+lang: "`r lang.latex`"
+geometry: top=2.4cm, bottom=2.1cm, outer=2cm, inner=4cm, headheight=40pt    
+output:
+  bookdown::gitbook:
+    config:
+      sharing:
+        twitter: no
+        facebook: no
+      toc:
+        collapse: subsection
+    includes:
+      in_header: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/header_gitbook_hide.html
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: yes
+    keep_md: yes
+    split_by: chapter+number
+    toolbar:
+      position: fixed
+    self_contained: false 
+  bookdown::pdf_book:
+    fig_caption: yes
+    highlight: tango
+    includes:
+      before_body: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/before_body.tex
+      in_header: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/formation_header_Rmd_Seb.tex
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE, purl=FALSE}
+library(tikzDevice)
+options(formatR.arrow = TRUE, width = 80, scipen = 6, digits = 3)
+knitr::knit_theme$set("nuvola")
+knitr::opts_chunk$set(
+  echo = FALSE,
+  purl = FALSE,
+  # fig.align = 'center',
+  fig.pos = "!h",
+  # out.width = "90%",
+  # fig.width = 5,
+  # fig.height = 5,
+  dpi = 150,
+  warning = FALSE,
+  message = FALSE,
+  tidy.opts = list(width.cutoff = 80)
+)
+set.seed(500)
+
+```
+
+```{r Preface_EN, eval=(lang == "EN"), results='asis'}
+cat('# Preface
+_The original_ *version of this* _tutorial has been created by Olivier Le Pape and Étienne Rivot from Agrocampus Ouest (Rennes, France). Since the phD I realised with them, I regularly updated the content according to my research but also to evolution of the R-software._',
+sep = "")
+```
+
+```{r Preface_FR, eval=(lang == "FR"), results='asis'}
+cat('# Préface
+_La version d\'origine de cette formation a été créée par Olivier Le Pape et Étienne Rivot à Agrocampus Ouest (Rennes, France). Depuis mon doctorat dans leur équipe, je mets à jour constamment cette formation au gré de ma recherche et de l\'évolution du logiciel R._',
+sep = "")
+```
+
+
+<!--  Header in PDF-HTML version -->
+```{r CourseVersion1, echo=CourseVersion, purl=FALSE}
+  # Generated with R and rmarkdown: Roadmap version - Students
+  # Generated with R and rmarkdown: Roadmap version - Teacher
+```
+
+<!-- Header in R scripts -->
+```{r R_header, echo=FALSE, purl=TRUE}
+# Tutorial : SpatialGLM
+# Maintainer : S. Rochette, StatnMap, sebastienrochettefr@gmail.com
+# Citation : Rochette, S., Rivot, E., Morin, J., Mackinson, S., Riou, P., Le Pape, O. (2010). Effect of nursery habitat degradation on flatfish population renewal. Application to Solea solea in the Eastern Channel (Western Europe). Journal of sea Research, 64.
+# Version : 2017
+# Encoding UTF-8
+
+```
+```{r CourseVersion2.R, echo=FALSE, purl=purl.S}
+  # Generated with R and knitr : R version - Students
+
+```
+```{r CourseVersion4.R, echo=FALSE, purl=purl.T}
+  # Generated with R and knitr: R version - Teacher
+
+```
+
+
+```{r Presentation, child='sections/00_Presentation.Rmd', eval=TRUE}
+```
+
+```{r Set_directories, child='sections/00_Preparation.Rmd', eval=TRUE, purl=TRUE}
+```
+
+```{r AllDataModelExploration, child='sections/01_AllDataExploration.Rmd', eval=eval.AllDataExploration, purl=eval.AllDataExploration}
+```
+
+```{r AllDataModel, child='sections/01_AllDataModel.Rmd', eval=eval.AllDataModel, purl=eval.AllDataModel}
+```
+
+<!-- Only for Quick method -->
+```{r PresAbsModel, child='sections/02_PresAbsModel.Rmd', eval=eval.PresAbsModel, purl=(eval.PresAbsModel & !ClassicWay)}
+```
+
+```{r DeltaModel, child='sections/02_DeltaModel.Rmd', eval=(eval.PresAbsModel & eval.PositiveModel & ClassicWay), purl=(eval.PresAbsModel & eval.PositiveModel & ClassicWay)}
+```
+
+```{r HSIModel, child='sections/03_HabitatMapping.Rmd', eval=eval.HSI, purl=eval.HSI}
+```

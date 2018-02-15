@@ -1,0 +1,660 @@
+<!-- SpatialGLM course - All data model -->
+```{r EN_DataModelling, eval=(lang == "EN"), results='asis'}
+cat('
+# Modelling
+## Outlines\n',
+styleFmt("Remember: Define what you are looking for, which question you try to answer!", "advert"),
+'\n
+- Test different form of models regarding combination of covariates and distribution form of the residuals
+- Compare models using statistical tools (AIC, anova, …), cross-validation tools but also your knowledge of the dataset and the answers you are looking for
+- Analyse the residuals. Analyse their distribution and if your hypotheses are verified.  
+', styleFmt("Only when hypotheses on distribution law are verified, physical covariates and interactions selected may start to be interpreted...", "advert"),
+'\n',
+beginStyleFmt("redbox", "p"),
+'Scripts given are only examples, they are not playing the best solutions !  
+Try your own !',
+endStyleFmt("redbox", "p"),
+'\n 
+', sep = "")
+```
+```{r FR_DataModelling, eval=(lang == "FR"), results='asis'}
+cat('
+# Modélisation
+## Étapes\n',
+styleFmt("Souvenez-vous: Définissez ce que vous cherchez, à quelles questions vous souhaiteriez répondre !", "advert"),
+'\n
+- Tester les différentes formes de modèles au regard des combinaisons de covariables et des formes de distributions des résidus
+- Comparer les modèles à l\'aide des outils statistiques à disposition (AIC, anova, …), de la validation croisée mais aussi de la connaissance du jeu de données et des questions ciblées
+- Analyser les résidus des modèles. Analyser leur distribution et s\'assurer que les hypothèses de construction sont vérifiées.  
+', styleFmt("C\'est seulement lorsque les hypothèses sur la distribution des résidus sont vérifiées, que les covariables et les interactions sélectionnées peuvent commencer à être interprétées...", "advert"),
+'\n',
+beginStyleFmt("redbox", "p"),
+'Les scripts qui sont fournis ne sont que des exemples, ils ne sont en aucun cas les meilleures solutions !
+Faîtes vos propres tests !',
+endStyleFmt("redbox", "p"),
+'\n  
+', sep = "")
+```
+```{r R_RememberModel, echo=FALSE, purl=TRUE}
+# REMEMBER ====-----------------------------------------------------------------
+# Define what you are looking for, which question you try to answer!
+
+# MODEL TESTING
+# Test different form of models regarding combination of covariates and distribution form of the residuals;
+# Compare models using statistical tools (AIC, anova, …), cross-validation tools but also your knowledge of the dataset and the answers you are looking for;
+# Analyse the residuals. Analyse their distribution and if your hypotheses are verified.
+
+# REMEMBER
+# Only when hypotheses on distribution law are verified, physical covariates and interactions selected may start to be interpreted...
+
+# ==== WARNING ====
+# Scripts below are just giving some examples, but are not playing best solutions !
+# Try other solutions, build your own ! 
+
+```
+
+```{r EN_Summary, eval=(lang == "EN"), results='asis'}
+cat('
+## How to interpret model outputs
+When you fit a lm or a glm, you can use different statistical and visual diagnosis answering to different questions. The main question you want to answer may be: 
+
+- "Do my covariates have an effect on my observations ?". This is not exactly what answers a model. It would be more "Do the covariates I put in my model help to explain a part of the variability of my observations ?"  
+
+To help you interpret the outputs of a model, let us look at the outputs of the following one:
+$$lm(Density ~ Bathy + Sedim, data = dataset)$$
+_This model is not the best model !_  
+
+### Summary(lm)
+This function shows a table with tests of significativity (Table \\@ref(tab:RTableSummary)). Tests are Student\'s tests. They test if the value of the related effect is different from zero. Indeed, if a covariate have an effect not significantly different from null effect, this may be unnecessary to keep it in the model.',
+if (Version == "Teacher") {
+paste('  
+
+- Here, the intercept is the basal effect. In a $y = a.x + b$ equation, intercept would be $b$. Here, this is a little different because we have some covariate as factors ("Sedim"). In this example, intercept shows a p-value close to zero, which means that its effect (`estimate ~ 100`) is significantly different from zero.
+- "Bathy" covariate is continuous. In a $y = a.x + b$ equation, this would be $a$. In this example, its effect `estimate ~ 6`, is significantly different from zero (`p-value ~ 0`).
+- "Sedim" covariate is a factor covariate with three levels. In summary, you can only see two levels ("2sand", "3coarse"). Indeed, the effect ($estimate$) levels are compared to the first level ("1mud"), for which effect equals zero. In the model $Y = a*Bathy + b[Sedim] + c$, the average Y for `Sedim = "1mud"` is $Y = a*Bathy + 0 + c$. Hence, here, `b["2sand"]` is not significantly different from `b["1mud"] = 0`, and, `b["3coarse"]` have `p-value = 0.07`, with also is not significantly different from `b["1mud"] = 0`.
+')}, sep = "")
+```
+```{r FR_Summary, eval=(lang == "FR"), results='asis'}
+cat('
+## Interpréter les sorties de modèles
+Lorsque vous ajustez un modèle linéaire (lm ou glm), vous pouvez utiliser différents tests statistiques et visuels qui répondent à différentes questions. Votre question principale pourrait être :
+
+- "Est-ce que mes covariables ont un effet sur mes observations ?". En réalité, ce n\'est pas exactement la question à laquelle va répondre votre modèle. Ce serait plutôt "Est-ce que les covariables que j\'ai utilisées expliquent une part de la variabilité de mes observations ?"  
+
+Pour que vous puissiez interpréter les différentes sorties de modèles, dans ce document, nous allons regarder le modèle suivant :
+$$lm(Density ~ Bathy + Sedim, data = dataset)$$
+_Ce modèle n\'est pas forcément le meilleur modèle à choisir !_  
+
+### Summary(lm)
+Cette fonction montre un tableau de tests de significativité (Table \\@ref(tab:RTableSummary)). Ce sont des tests de Student. Ils testent si la valeur estimée pour un effet est ou non significativement différente de zéro. Ainsi, si une covariable a un effet non significativement différent de l\'effet nul, il est probablement inutile de la conserver dans le modèle.
+',
+if (Version == "Teacher") {
+paste('
+
+- Ici, ce qui est appelé "Intercept" est l\'effet de base. Dans une équation $y = a.x + b$, l\'"intercept" serait $b$. Ici, c\'est un peu différent car il y a des covariables au format facteur ("Sedim"). Dans cet exemple, l\'"intercept" montre une "p-value" proche de zéro, ce qui signifie que son effet (`estimate ~ 100`) est significativement différent de zéro.
+- La covariable "Bathy" est continue. Dans une équation de type $y = a.x + b$ ce serait $a$. Dans cet exemple, son effet `estimate ~ 6`, est significativement différent de zéro (`p-value ~ 0`).
+- La covariable "Sedim" est un facteur à trois niveaux. Dans le "summary", vous ne pouvez en voir que deux ("2sand", "3coarse"). En réalité, les effets des niveaux de facteur ($estimate$) sont comparés au premier niveau ("1mud"), pour lequel l\'effet est égal à zéro. Dans l\'équation $Y = a*Bathy + b[Sedim] + c$, l\'estimation de la moyenne Y pour `Sedim = "1mud"` est $Y = a*Bathy + 0 + c$. Dans les résultats du tableau, `b["2sand"]` est donc non significativement différent de `b["1mud"] = 0`, et, `b["3coarse"]` avec une `p-value = 0.07`, n\'est pas non plus significativement différent de `b["1mud"] = 0`.
+')}, sep = "")
+```
+```{r R_Summary, purl=TRUE, results='hide', fig.keep='none'}
+# Try simple Linear models ----
+Dens1.lm <- lm(Density ~ Bathy + Sedim, data = dataset)
+summary.glm <- summary(Dens1.lm)
+summary.glm
+
+```
+```{r RTableSummaryCap, purl=FALSE, results='hide'}
+ifelse(lang == "EN", 
+       RTableSummaryCap <- "Example of a `summary(lm)` output", 
+       RTableSummaryCap <- "Exemple d\'une sortie de `summary(lm)`")
+```
+```{r RTableSummary, purl=FALSE}
+knitr::kable(summary.glm$coefficients,
+             caption = RTableSummaryCap)
+```
+
+```{r EN_ResidualsExemple, eval=(lang == "EN"), results='asis'}
+cat(
+'### Residuals analysis
+An assumption when building a linear model is homoscedasticity, also called homogeneity of the variance. This means that the variance of response `y` is the same whatever is the value of predictor `x`. In a classical Gaussian model fitted on `x` and `y` like $y = a.x + b + \\epsilon$, variable $\\epsilon$ represents the residuals of the model. It is supposed to be centered on zero and with a Gaussian variance, thus following a Gaussian distribution $\\epsilon \\sim N(0, \\sigma)$  ',
+if (Version == "Teacher") {
+paste('
+If we simulate such a model $y = 2.x + 5 + \\epsilon$, we observe Fig. \\@ref(fig:RFigResidualsExemple), with homogeneous distribution of observations around the fit, and Gaussian distribution of residuals as shown by histogram and qqplot.
+
+(ref:RFigResidualsExempleCap) Simulation of a linear relation between x and y with a Gaussian residuals distribution.
+')}, sep = "")
+```
+```{r FR_ResidualsExemple, eval=(lang == "FR"), results='asis'}
+cat(
+'### Analyse de résidus
+Une hypothèse de construction d\'un modèle linéaire est l\'homoscédasticité, aussi appelée homogénéité de la variance. Cela signifie que la variance de la réponse `y` est la même quelque soit la valeur du prédicteur  `x`. Dans un modèle Gaussien classique ajustant `x` à `y` ainsi: $y = a.x + b + \\epsilon$, la variable $\\epsilon$ représente les résidus du modèle. Ils sont supposés être centrés sur zéro et avec une variance Gaussienne, leur distribution suivant ainsi la loi Gaussienne $\\epsilon \\sim N(0, \\sigma)$  ',
+if (Version == "Teacher") {
+paste('
+Lorsqu\'on simule un tel modèle, par exemple $y = 2.x + 5 + \\epsilon$, on observe la figure \\@ref(fig:RFigResidualsExemple), avec une homogénéité de la distribution des observations autour de l\'ajustement, et une distribution Gaussienne des résidus comme le montrent l\'histogramme et le "qqplot".
+
+(ref:RFigResidualsExempleCap) Simulation d\'une relation linéaire entre x et y avec un résidu Gaussien.
+')}, sep = "")
+```
+
+```{r RFigResidualsExemple, echo=(Version == "Teacher"), eval=(Version == "Teacher"), purl=purl.T, fig.cap='(ref:RFigResidualsExempleCap)', fig.align='center'}
+# Example of homogeneous residuals
+n <- 1000
+epsilon <- rnorm(n, 0, 5)
+x <- runif(n, 0, 10)
+y <- 2*x + 5 + epsilon
+
+par(mfrow = c(1,3))
+plot(x, y, pch = 20)
+abline(5, 2, col = "red", lwd = 2)
+hist(epsilon, breaks = 20, col = "grey")
+qqnorm(epsilon); qqline(epsilon, col = "red")
+
+```
+
+```{r EN_ResidualsDiag, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('From this example, you can define what are the graphical diagnostics necessary to verify if our assumptions were true. We use the same model as previously (Fig. \\@ref(fig:RFigResidualsDiag)):
+
+- `Residuals vs Fitted` - In this example, we can see that the variability of residuals increase with predicted value, which is against homogeneity of the variance.
+- `Scale-Location` is in accordance with the previous figure as it shows an increasing residual deviance when predicted values increase.
+- `Normal Q-Q` - This qqplot shows the divergence between theoretical quantiles of the Gaussian distribution and the real quantiles of the residuals of the model. The deviation is high with higher values indicating a longer distribution queue.
+- `Hist. of residuals` is in accordance with the qqplot as the distribution does not look like a Gaussian distribution centered on zero. It has a long queue of distribution with much more high positive values than negative ones.
+', sep = "")
+```
+
+```{r FR_ResidualsDiag, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('À partir de cet exemple, vous pouvez définir les diagnostics graphiques nécessaires pour vérifier vos hypothèses de construction de modèle. Lorsqu\'on utilise le même modèle que précédemment (Fig.\\@ref(fig:RFigResidualsDiag)) :
+
+- `Residuals vs Fitted` - Dans cet exemple, on peut voir que la variablité des résidus augmente avec les valeurs prédites, ce qui va à l\'encontre de l\'homogénéité de la variance.
+- `Scale-Location` est en accord avec la figure précédente car on voit une augmentation de la deviance des résidus quand les prédictions augmentent.
+- `Normal Q-Q` - Cette figure appelée "qqplot" montre la divergence entre les quantiles théoriques d\'une loi Gaussienne et les quantiles réels de la distribution des résidus du modèle. La divergence est importante pour les valeurs élevées, ce qui montre une queue de distribution plus longue qu\'une loi Normale.
+- `Hist. of residuals` - L\'histogramme des résidus est en accord avec le qqplot car on voit clairement un distribution qui n\'est pas une Gaussienne centrée sur zéro. Cette distribution a une longue queue de distribution avec beaucoup plus de valeurs positives que de valeurs négatives.
+', sep = "")
+```
+
+```{r RFigResidualsDiagCap, purl=FALSE, results='asis', fig.align='center'}
+cat('  ',
+ifelse(
+  lang == "EN", 
+  "(ref:RFigResidualsDiagCap) Diagnostic plots of a glm model to verify hypotheses of model construction.", 
+  "(ref:RFigResidualsDiagCap) Figures de diagnostic d\'un modèle linéaire permettant de vérifier les hypothèses de construction."),'  
+  ', sep = "")
+```
+
+```{r RFigResidualsDiag, purl=TRUE, results='hide', fig.cap='(ref:RFigResidualsDiagCap)', fig.keep='hold', fig.align='center'}
+# Diagnostic of the residuals of Dens1.lm
+par(mfcol = c(2,2))
+plot(Dens1.lm, which = 1:3)
+hist(resid(Dens1.lm), main = "Hist. of residuals")
+
+```
+
+```{r EN_Anova, eval=(lang == "EN"), results='asis'}
+cat(
+'### Analysis of variance
+The question answered by an `anova` (with a Chi-2 test) is: Does the covariate added has significantly increased the likelihood of the model (or reduced the residual deviance), compared to the previous one without this covariate?',
+if (Version == "Teacher") {
+paste('  
+  
+- `NULL` is the test for the model without covariates, which is the model estimating the mean: $Density \\sim constant$.
+- `Bathy` is the test for the model with `Bathy` only: $Density \\sim Bathy$. The `p-value` is closed to zero, which means that the gain in deviance explained when adding `Bathy`, is significantly different from zero.
+- `Sedim` is the test for the model with `Bathy` and `Sedim`, in this order: $Density \\sim Bathy + Sedim$. The `p-value ~ 0.2` says that there is 20% risk that the deviance explained when adding covariate `Sedim` to the model already containing `Bathy` is null.
+')}, sep = "")
+```
+```{r FR_Anova, eval=(lang == "FR"), results='asis'}
+cat(
+'### Analyse de variance
+La question à laquelle répond une `anova` (avec un test du Chi-2) est : Est-ce que la covariable ajoutée augmente significativitement la vraisemblance du modèle (ou a réduit la déviance résiduelle), comparé au modèle précédent, sans cette covariable ?',
+if (Version == "Teacher") {
+paste('  
+  
+- `NULL` est le test pour un modèle sans covariable, c\'est le modèle qui estime la moyenne : $Density \\sim constant$.
+- `Bathy` est le test pour un modèle uniquement avec la `Bathy` : $Density \\sim Bathy$. La `p-value` est proche de zéro, indiquant que le gain de déviance expliquée en ajoutant la `Bathy` est significativement différent de zéro.
+- `Sedim` est le test pour un modèle avec `Bathy` et `Sedim`, dans cet ordre : $Density \\sim Bathy + Sedim$. La `p-value ~ 0.2` indique qu\'il y a un risque de 20% que la déviance expliquée en ajoutant la covariable `Sedim` au modèle contenant déjà la `Bathy` soit nulle.
+')}, sep = "")
+```
+```{r R_Anova, purl=TRUE, results='hide'}
+# Analysis of variance
+aov1 <- anova(Dens1.lm, test = "Chisq") 
+aov1
+
+AIC(Dens1.lm)
+```
+
+```{r RTableAnovaCap, purl=FALSE, results='hide'}
+ifelse(lang == "EN", 
+       RTableAnovaCap <- "Example of a `anova(lm)` output", 
+       RTableAnovaCap <- "Exemple d\'une `sortie` de anova(lm)")
+```
+
+```{r RTableAnova, purl=FALSE}
+knitr::kable(aov1,
+             caption = RTableAnovaCap)
+```
+
+```{r EN_AIC, eval=(lang == "EN"), results='asis'}
+cat(
+'### Akaike (AIC) and Bayesian (BIC) criterions
+AIC and BIC are criterions of goodness of fit penalized by the number of parameters fitted. Description of these functions in R is: 
+
+> Generic function calculating Akaike\'s ‘An Information Criterion’ for one or several fitted model objects for which a log-likelihood value can be obtained, according to the formula $IC = -2*log-likelihood + k*npar$, where `npar` represents the number of parameters in the fitted model, and `k = 2` for the usual AIC, or `k = log(n)` (`n` being the number of observations) for the so-called BIC or SBC (Schwarz\'s Bayesian criterion).  
+',
+if (Version == "Teacher") {
+paste('  
+Indeed, the more parameters you add in a model, the more chances you get to fit the model perfectly (Table \\@ref(tab:RTableAnovaEx), Fig. \\@ref(fig:RFigAICExample)). The AIC decrease with residual deviance and increase with the number of parameters. The lower the AIC, the more parsimonious the model.
+
+(ref:RFigAICExampleCap) Different model fits on the same dataset, but with an increasing number of parameters.
+
+')}, sep = "")
+```
+```{r FR_AIC, eval=(lang == "FR"), results='asis'}
+cat(
+'### Critères d\'Akaike (AIC) et Bayesian (BIC)
+L\'AIC et le BIC sont des critères de qualité d\'ajustement pénalisés par le nombre de paramètres estimés. La description (traduite) de ces fonctions dans R est :
+
+> Function générique calculant "Le Critère d\'Information" d\'Akaike pour un ou plusieurs modèles ajustés pour lesquels une "log-vraisemblance" peut être obtenue, en utilisant la formule $IC = -2*log-likelihood + k*npar$, où `npar` represente le nombre de paramètres estimés, et `k = 2` pour l\'AIC classique, ou `k = log(n)` (`n` étant le nombre d\'observations) pour le BIC ou SBC (Schwarz\'s Bayesian criterion).  
+',
+if (Version == "Teacher") {
+paste('  
+En effet, plus vous ajoutez de paramètres dans un modèle, plu svous avez de chances que le modèle s\'ajuste parfaitement aux données (Table \\@ref(tab:RTableAnovaEx), Fig. \\@ref(fig:RFigAICExample)). L\'AIC diminue avec la déviance résiduelle et augmente avec le nombre de paramètres ajustés. Plus l\'AIC est bas, plus parsimonieux est le modèle.
+
+(ref:RFigAICExampleCap) Différents modèles ajustés sur les mêmes données mais avec un nombre de paramètres ajustés croissant.
+
+')}, sep = "")
+```
+
+```{r R_AICExample, purl=purl.T, eval=(Version == "Teacher"), echo=FALSE}
+# Example of over-parametrisation
+n <- 10
+x <- runif(n, 0, 100)
+data <- data.frame(x = x, y = 2*x + 3 + 50*sin(x))
+
+lm1 <- lm(y ~ x, data = data)
+lm2 <- lm(y ~ poly(x, 3), data = data)
+lm3 <- lm(y ~ poly(x, 5), data = data)
+
+aovEx <- anova(lm1, lm2, lm3, test = "Chisq")
+aovExAIC <- cbind(model = paste0("lm", 1:3), aovEx, "||" , AIC(lm1, lm2, lm3))
+
+```
+```{r RTableAnovaExCap, purl=FALSE, results='hide'}
+ifelse(
+  lang == "EN", 
+  RTableAnovaExCap <- "Comparison deviance explained of the different models with increasing number of parameters", 
+  RTableAnovaExCap <- 
+    "Comparaison de la déviance expliquée par différents modèles avec un nombre croissant de paramètres")
+```
+```{r RTableAnovaEx, purl=FALSE, eval=(Version == "Teacher")}
+knitr::kable(aovExAIC,
+             caption = RTableAnovaExCap)
+```
+
+```{r RFigAICExample, purl=purl.T, fig.cap='(ref:RFigAICExampleCap)', eval=(Version == "Teacher"), fig.align='center'}
+ggplot(data, aes(x, y)) + 
+  geom_point(cex = 3) + 
+  stat_smooth(method = "lm", formula = y ~ x, 
+              aes(col = "lm1; y~x"), se = FALSE) +
+  stat_smooth(method = "lm", formula = y ~ poly(x, 3),
+              aes(col = "lm2; y~poly(x,3)"), se = FALSE) + 
+  stat_smooth(method = "lm", formula = y ~ poly(x, 5),
+              aes(col = "lm3; y~poly(x,5)"), se = FALSE) +
+  theme(legend.position = "bottom")
+
+```
+
+```{r EN_OtherGLM, eval=(lang == "EN"), results='asis'}
+cat('
+## Find the best model  
+Function ', styleFmt("lm", "codecommand"), ' is only used for model with a Gaussian residual distribution. To try other kind of distribution, you will use ', styleFmt("glm", "codecommand"), ', with a ', styleFmt("family", "codecommand"), ' parameter. You may want to use distributions that allow for higher dispersal than the Gaussian one. Among families available, you can try ', styleFmt("poisson, quasipoisson, Gamma, Log-gaussian", "codecommand"), '.
+
+- ', styleFmt("What is the best model according to all these criterions ?", "exo"), '  
+', sep = "")
+```
+```{r FR_OtherGLM, eval=(lang == "FR"), results='asis'}
+cat('
+## Trouver le meilleur modèle  
+La fonction ', styleFmt("lm", "codecommand"), ' n\'est utilisée que pour des modèles avec une distribution Gaussienne des résidus. Pour tester d\'autres types de distributions, il faut utiliser ', styleFmt("glm", "codecommand"), ', avec un paramètre pour la famille de distribution (', styleFmt("family", "codecommand"), '). Vous pouvez utiliser des distributions qui autorisent une plus grande queue de distribution que la loi Normale. Parmis les familles disponibles, vous pouvez tester ', styleFmt("poisson, quasipoisson, Gamma, Log-gaussian", "codecommand"), '.
+
+- ', styleFmt("Quel est le meilleur modèle au regard des différents critères évoqués ?", "exo"), '  
+', sep = "")
+```
+
+```{r R_OtherGLM.T, purl=(purl.T & ClassicWay), eval=(purl.T & ClassicWay)}
+# Try Generalized Linear Models ----
+# Family = Poisson ? / Overdispersed poisson ?
+# Poisson
+Dens2.glm <- glm(round(Density) ~ Bathy_c + Sedim + Year,
+                 family = poisson, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens2.glm, which = c(1, 2, 3, 4))
+
+AIC(Dens2.glm)
+
+# Poisson x Overdispersion
+Dens2.glm <- glm(round(Density) ~ Bathy_c + Sedim + Year,
+                 family = quasipoisson, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens2.glm, which = c(1, 2, 3, 4))
+
+# Family = Gamma ?
+Dens3.glm <- glm(Density + 1 ~ Bathy_c + Sedim + Year,
+  family = Gamma, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens3.glm, which = c(1, 2, 3, 4))
+
+# standardized Pearson residuals vs predictions
+plot(fitted(Dens3.glm), rstandard(Dens3.glm, type = "pearson"), 
+     main = "Res. Pearson STD vs Pred.")
+
+# Using step AIC
+null.m <- glm((Density + 1) ~ 1, family = Gamma, data = dataset)
+Dens3.glm <- stepAIC(null.m, 
+                     (Density + 1) ~ (Bathy_c + Sedim + Year)^2,
+                     data = dataset, direction = "both")
+
+# Gaussian on Log-transformed data ?
+null.m <- glm(log(Density + 1) ~ 1, family = gaussian, data = dataset)
+Dens4.glm <- stepAIC(null.m, 
+                     log(Density + 1) ~ (Bathy_c + Sedim + Year) ^ 2, 
+                     data = dataset, direction = "both")
+
+# Dens4.glm <- glm(log(Density+1) ~ Bathy_c + Sedim, family = gaussian, data = dataset)
+
+summary(Dens4.glm)
+
+par(mfrow = c(2,2))
+plot(Dens4.glm, which = c(1, 2, 3, 4))
+
+# WARNING - AIC values for gaussian models on log-transformed data
+
+# The AIC criteria uses the Deviance. 
+# A gaussian deviance with log-transformed values (what is done in AIC(model))
+# IS NOT equivalent to computing a LogNormal deviance with non-transformed values
+# A correction must be applied to get the TRUE AIC value
+
+AIC <- AIC(Dens4.glm) + 2 * sum(log(dataset$Density + 1))
+AIC
+
+```
+```{r R_OtherGLMQuick.T, purl=(purl.T & !ClassicWay), eval=(purl.T & !ClassicWay)}
+# Try Generalized Linear Models ----
+# Family = Poisson ? / Overdispersed poisson ?
+# Poisson
+Dens2.glm <- glm(round(Density) ~ Bathy_c + Sedim + Year,
+                 family = poisson, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens2.glm, which = c(1, 2, 3, 4))
+
+AIC(Dens2.glm)
+
+# Poisson x Overdispersion
+Dens2.glm <- glm(round(Density) ~ Bathy_c + Sedim + Year,
+                 family = quasipoisson, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens2.glm, which = c(1, 2, 3, 4))
+
+# Family = Gamma ?
+Dens3.glm <- glm(Density ~ Bathy_c + Sedim + Year,
+  family = Gamma, data = dataset)
+
+par(mfrow = c(2,2))
+plot(Dens3.glm, which = c(1, 2, 3, 4))
+
+# standardized Pearson residuals vs predictions
+plot(fitted(Dens3.glm), rstandard(Dens3.glm, type = "pearson"), 
+     main = "Res. Pearson STD vs Pred.")
+
+# Using step AIC
+null.m <- glm(Density ~ 1, family = Gamma, data = dataset)
+Dens3.glm <- stepAIC(null.m, 
+                     Density ~ (Bathy_c + Sedim + Year)^2,
+                     data = dataset, direction = "both")
+
+# Gaussian on Log-transformed data ?
+null.m <- glm(log(Density) ~ 1, family = gaussian, data = dataset)
+Dens4.glm <- stepAIC(null.m, 
+                     log(Density) ~ (Bathy_c + Sedim + Year) ^ 2, 
+                     data = dataset, direction = "both")
+
+# Dens4.glm <- glm(log(Density) ~ Bathy_c + Sedim, family = gaussian, data = dataset)
+
+summary(Dens4.glm)
+
+par(mfrow = c(2,2))
+plot(Dens4.glm, which = c(1, 2, 3, 4))
+
+# WARNING - AIC values for gaussian models on log-transformed data
+
+# The AIC criteria uses the Deviance. 
+# A gaussian deviance with log-transformed values (what is done in AIC(model))
+# IS NOT equivalent to computing a LogNormal deviance with non-transformed values
+# A correction must be applied to get the TRUE AIC value
+
+AIC <- AIC(Dens4.glm) + 2 * sum(log(dataset$Density))
+AIC
+
+```
+```{r R_OtherGLM.S, purl=purl.S, eval=purl.S}
+# Try Generalized Linear Models ----
+# Family = Poisson ? / Overdispersed poisson ?
+# Poisson
+Dens2.glm <- glm(round(Density) ~ ...,
+                 family = poisson, data = dataset)
+
+# Poisson x Overdispersion
+Dens2.glm <- glm(round(Density) ~ ...,
+                 family = quasipoisson, data = dataset)
+
+# Family = Gamma ?
+Dens3.glm <- glm(Density ~ ...,
+                 family = Gamma, data = dataset)
+
+# Using step AIC
+null.m <- glm((Density) ~ 1, family = Gamma, data = dataset)
+Dens3.glm <- stepAIC(null.m, 
+                     (Density) ~ (Bathy_c + Sedim + Year)^2,
+                     data = dataset, direction = "both")
+
+# Gaussian on Log-transformed data ?
+null.m <- glm(log(Density) ~ 1, 
+              family = gaussian, data = dataset)
+Dens4.glm <- stepAIC(...)
+
+# WARNING - AIC values for gaussian models on log-transformed data
+
+# The AIC criteria uses the Deviance. 
+# A gaussian deviance with log-transformed values (what is done in AIC(model))
+# IS NOT equivalent to computing a LogNormal deviance with non-transformed values
+# A correction must be applied to get the TRUE AIC value
+
+AIC <- AIC(Dens4.glm) + 2 * sum(log(dataset$Density))
+AIC
+
+# Choosen model ?
+model <- ...
+```
+
+```{r EN_GLMResults, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('
+### Explore the outputs of the best model
+
+- ', styleFmt('What can you say about the complete diagnostic of your model ?','exo'),' (Fig. \\@ref(fig:RFigGLMResults))
+
+(ref:RFigGLMResultsCap) Diagnostics of the best GLM chosen
+
+', sep = "")
+```
+```{r FR_GLMResults, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('
+### Exploration des sorties du meilleur modèle
+
+- ', styleFmt('Que pouvez-vous dire sur le diagnostic complet de votre modèle ?','exo'),' (Fig. \\@ref(fig:RFigGLMResults))
+
+(ref:RFigGLMResultsCap) Diagnostic du meilleur GLM sélectionné
+
+', sep = "")
+```
+```{r RGLMResults.T, purl=purl.T}
+# Chosen model ?
+if (ClassicWay) {
+model <- glm(log(Density+1) ~ Bathy_c + Sedim, family = gaussian, data = dataset)
+} else {
+model <- glm(log(Density) ~ Bathy_c + Sedim, family = gaussian, data = dataset)  
+}
+
+```
+```{r RFigGLMResults, purl=TRUE, fig.keep="last", eval=(Version == "Teacher"), fig.cap='(ref:RFigGLMResultsCap)', results='hide', fig.align='center'}
+# Analyse ouputs of the chosen model ----
+# Parameters estimates
+summary(model)
+
+# Analysis of variance
+anova(model, test = "Chisq") 
+
+# % explained deviance
+pc_dev_expl <- anova(model)[-1,2]*100 / anova(model)[1,4]
+# % explained per factor
+print(cbind(rownames(anova(model))[-1], round(pc_dev_expl, digit = 1)))
+# % explained per df
+print(cbind(rownames(anova(model))[-1],
+            round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+
+# Model goodness of fit and residuals
+par(mfcol = c(2, 2))
+plot(model, which = 1:4)
+
+# std Pearson residuals vs pred
+par(mfrow = c(2, 3))
+plot(dataset$Density + ClassicWay*1, rstandard(model, type = "pearson"),
+     main = "Res. Pearson STD vs Obs.")
+plot(fitted(model), rstandard(model, type = "pearson"), 
+     main = "Res. Pearson STD vs Pred.")
+
+# std Deviance residuals	
+qqnorm(rstandard(model, type = "deviance"),
+       ylim = c(-3, 3),
+       main = "Normal Q-Q plot sur Res. deviance std.")
+qqline(rstandard(model, type = "deviance"), col = "red")
+
+# Cook's distance
+plot(cooks.distance(model), type = "h", main = "Cook's distance")
+
+# Predictions vs data
+pred <- model$fitted
+# obs <- dataset$Density+1
+obs <- log(dataset$Density + ClassicWay*1)
+plot(obs, pred, xlim = c(0, 10), ylim = c(0, 10), main = "Pred vs Obs")
+abline(b = 1, a = 0, col = "red")
+
+# Homogeneity of the variance of residuals per class of bathymetry
+dataset$Resid <- model$resid
+boxplot(dataset$Resid ~ dataset$Bathy_c, main = "Resid vs Bathy_c")
+
+```
+
+```{r EN_GLMPredict, eval=(lang == "EN"), results='asis'}
+cat('
+## Predictions of the model
+When satisfied about the model chosen, we can do predictions.
+
+- Use the csv file provided to see the effect of covariates of the model (Fig. \\@ref(fig:RFigGLMPredict))
+
+(ref:RFigGLMPredictCap) Predictions of the best model chosen
+
+', sep = "")
+```
+```{r FR_GLMPredict, eval=(lang == "FR"), results='asis'}
+cat('
+## Prédictions du modèle
+Lorsque vous êtes satisfaits du modèle sélectionné, vous pouvez faire des prédictions
+
+- Utiliser le fichier csv fourni pour voir l\'effet des covariables sélectionnées (Fig. \\@ref(fig:RFigGLMPredict))
+
+(ref:RFigGLMPredictCap) Prédictions du meilleur GLM sélectionné
+
+', sep = "")
+```
+
+```{r RFigGLMPredict, purl=purl.T, fig.cap='(ref:RFigGLMPredictCap)', results='hide', out.width='80%', message=FALSE, fig.align='center'}
+# Predictions ----
+# Dowload the file with factors for predictions
+predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),
+                                 delim = ";")
+
+# Compute predictions (in the scale of the response)
+pred.Density <- cbind(predictions, predict.glm(model, predictions, type = "r", se = T)) %>%
+  group_by(Sedim, Bathy_c) %>%
+  summarise(mean.fit = mean(fit),
+            mean.se = mean(se.fit)) %>%
+  ungroup()
+
+# library(emojifont)
+ggplot(pred.Density, aes(x = Bathy_c, y = mean.fit, colour = Sedim)) +
+  geom_point() +
+  #geom_text(family = 'EmojiOne', size = 8, label = emoji('fish'),
+  #          show.legend = FALSE) + 
+  geom_errorbar(aes(ymin = mean.fit - mean.se, ymax = mean.fit + mean.se), 
+                width = 0.2) +
+  theme(legend.position = "bottom")
+
+```
+```{r R_GLMPredict.S, purl=purl.S, eval=eval.S}
+# Predictions ----
+# Dowload the file with factors for predictions
+predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),
+                                 delim = ";")
+predictions
+
+# Compute predictions (in the scale of the response)
+pred.Density <- predict.glm(model, predictions, type = "r", se = T)
+
+# Plot
+plot(pred.Density$fit[1:4],
+     col = "red", xaxt = "n", xlab = "Bathy_c",
+     main = "Pred. for year 1985", 
+     ylim = c(min(pred.Density$fit), max(pred.Density$fit)))
+points(pred.Density$fit[5:8], col = "forestgreen", xaxt = "n")
+points(pred.Density$fit[9:12], col = "blue", xaxt = "n")
+axis(1, at = 1:4, labels = levels(dataset$Bathy_c))
+legend("topright", fill = c("red", "forestgreen", "blue"), 
+       legend = c("mud", "sand", "coarse"))
+
+```
+
+```{r EN_GLMConclude, eval=(lang == "EN" & Version == "Teacher" & ClassicWay), results='asis'}
+cat('
+## Conclusions on modeling
+The best model seems to give some interesting results but we can not be satisfied with it because the analysis of residuals is not satisfactory.
+
+- No Gaussian distribution
+    + Numerous absences
+    + Large distribution with high values of density
+- No family of distribution satisfies GLM hypotheses
+    + Gaussian residuals + stable variance
+    + Exponential family law not adapted
+
+**We need to use a model that accounts for zero-inflated data !**
+
+', sep = "")
+```
+```{r FR_GLMConclude, eval=(lang == "FR" & Version == "Teacher" & ClassicWay), results='asis'}
+cat('
+## Conclusions sur la modélisation
+Le meilleur modèle sélectionné semble donner des résultats intéressants mais on ne doit pas s\'en satisfaire car l\'analyse des résidus n\'est pas du tout satisfaisante.
+
+- Pas de distribution Gaussienne
+    + De nombreuses absences
+    + Une distribution large avec de fortes valeurs de densités
+- Aucune famille de distribution ne satisfait les hypothèses des GLM
+    + Résidus Gaussiens et homogénéité de la variance
+    + Les familles de loi exponentielles ne sont pas adaptées
+
+**Il est nécessaire d\'utiliser un modèle qui tient compte de données avec beaucoup d\'absences ("zero-inflated data") !**
+
+', sep = "")
+```
+

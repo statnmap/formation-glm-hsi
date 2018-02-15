@@ -1,0 +1,396 @@
+```{r wdfiDelta}
+# Folder where to save outputs from R
+figDeltaWD <- paste0(wd, "/03_Figures/02_DeltaModel")
+```
+
+```{r EN_DeltaPresentation, eval=(lang == "EN"), results='asis'}
+cat('# Delta model
+## Outlines
+The model on the complete dataset was not satisfying. To better account for (1) absence values and (2) high densities, we will use a delta approach. The delta model separates data in two sub-datasets, one for presence-absence and one for densities when presence.
+    
+- Build a presence / absence model
+    + Binomial distribution
+    + Predict of probability of presence
+- Build a model on positive values
+    + Distribution to be defined
+    + Predict density when presence
+
+Because models are built separately, they may use different covariates. 
+
+- Delta approach couples both sub-models
+    + Binomial sub-model: $p_{0/1}$
+    + Positive sub-model: $Dens_{+}$
+    + Coupling: $Density = p_{0/1} \\cdot Dens_{+}$
+
+',
+sep = "")
+```
+```{r FR_DeltaPresentation, eval=(lang == "FR"), results='asis'}
+cat('# Modèle Delta
+## Étapes
+Le modèle sur les données complètes n\'était pas satisfaisant. Pour mieux prendre en compte (1) les données d\'absences et (2) les fortes valeurs de densités, nous allons utiliser un approche Delta. Le modèle Delta sépare les données en deux sous-groupes, un pour la présence-absence, l\'autre pour les densités lorsqu\'il y a présence.
+
+- Construction d\'un modèle de présence / absence
+    + Distribution binomiale
+    + Prédiction de probabilités de présence
+- Construction d\'un modèle sur données positives
+    + Distribution à définir
+    + Prédiction des densités lorsqu\'il y a présence
+
+Puisque les modèles sont ajustés séparément, ils peuvent inclure des covariables différentes. 
+
+- L\'approche Delta couple les deux sous-modèles
+    + Sous-modèle Binomial : $p_{0/1}$
+    + Sous-modèle positif : $Dens_{+}$
+    + Couplage: $Density = p_{0/1} \\cdot Dens_{+}$
+
+',
+sep = "")
+```
+
+```{r PresAbsModel, child='02_PositiveModel.Rmd', eval=eval.PositiveModel, purl=eval.PositiveModel}
+```
+
+```{r PresAbsModel, child='02_PresAbsModel.Rmd', eval=eval.PresAbsModel, purl=eval.PresAbsModel}
+```
+
+```{r R_DeltaExemple, purl=purl.T, eval=(Version ==  "Teacher")}
+# Example for Delta model ----
+a <- 4
+m <- matrix(
+  sample(x = c(0, 0, 0, 1, 2, 5, 10), size = a*a, replace = TRUE),
+  ncol = a)
+m.gg <- tbl_df(as.data.frame(m)) %>%
+      mutate(y = rev(seq(1, a, length = a))) %>%
+      tidyr::gather(x, value, -y) %>%
+      mutate(x = rep(seq(1, a, length = a), each = a))
+
+g <- ggplot(m.gg, aes(x, y)) +
+  geom_tile(aes(fill = value)) +
+  geom_text(aes(label = value), size = 8) +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_void() +
+  theme(legend.position = "none", 
+        panel.border = element_rect(fill = "transparent")) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0))
+
+```
+```{r EN_DeltaCoupling, eval=(lang == "EN"), results='asis'}
+cat('
+## Coupling the two sub-models
+### Delta approach
+The Delta approach is the method for coupling the two sub-models. Indeed, the two sub-models are simply multiplied together.  
+', 
+if (Version == "Teacher") {paste0('
+On the simple example of Fig \\@ref(fig:RFigDeltaExemple), the average density would be $', round(mean(m.gg$value), digits = 2), '$ which in this case is simply the sum of all observations ($sum = ', sum(m.gg$value), '$) divided by the number of observations ($nb = ', length(m.gg$value), '$). However, we can calculate this differently. On this same example, we observe $', sum(m.gg$value != 0), '$ presences among the $', a*a, '$ samples, thus the probability of presence is $', round(mean(m.gg$value != 0), digits = 2), '$. When focusing only on positive values, the average of positives values is $', round(mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), '$. Thus, the average of the area is $', round(mean(m.gg$value != 0), digits = 2), ' \\times ', round(mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), ' = ', round(mean(m.gg$value != 0) * mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), '$.
+
+(ref:RFigDeltaExempleCap) Example of densities observations
+
+')},'
+Coupling the two sub-models is:
+
+- Binomial sub-model: $p_{0/1} \\sim Bathymetry + Sediment$
+- Positive sub-model: $Dens_{+} \\sim Bathymetry$
+    + if log-values: $Dens_{+} = exp(log(Y_{+})) \\times exp(-0.5 \\cdot \\sigma^{2} \\cdot log(Y_{+}))$
+- Coupling: $Density = p_{0/1} \\cdot Dens_{+}$
+
+',
+sep = "")
+```
+```{r FR_DeltaCoupling, eval=(lang == "FR"), results='asis'}
+cat('
+## Couplage des deux sous-modèles
+### L\'approche Delta
+L\'approche Delta est la méthode pour coupler les deux sous-modèles. En réalité, les deux modèles sont simplement multipliés l\'un à l\'autre.
+', 
+if (Version == "Teacher") {paste0('
+Sur l\'exemple simple de la figure \\@ref(fig:RFigDeltaExemple), la densité moyenne est $', round(mean(m.gg$value), digits = 2), '$, ce qui est simplement la somme de toutes les densités observées ($sum = ', sum(m.gg$value), '$) divisée par le nombre d\'observations ($nb = ', length(m.gg$value), '$). Cependant, la moyenne peut être calculée différemment. Dans cet exemple, on observe $', sum(m.gg$value != 0), '$ présences parmi les $', a*a, '$ échantillons. La probabilité de présence est donc $', round(mean(m.gg$value != 0), digits = 2), '$. Si on ne regarde que les valeurs positives, la moyenne de ces valeurs positives est $', round(mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), '$. Ainsi, la moyenne des densités sur la zone est $', round(mean(m.gg$value != 0), digits = 2), ' \\times ', round(mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), ' = ', round(mean(m.gg$value != 0) * mean(m.gg$value[which(m.gg$value != 0)]), digits = 2), '$.
+
+(ref:RFigDeltaExempleCap) Exemple de densités observées
+
+')},'
+Le couplage des deux sous-modèles c\'est :
+
+- Sous-modèle binomial: $p_{0/1} \\sim Bathymetry + Sediment$
+- Sous-modèle positif: $Dens_{+} \\sim Bathymetry$
+    + Si log-transformation: $Dens_{+} = exp(log(Y_{+})) \\times exp(-0.5 \\cdot \\sigma^{2} \\cdot log(Y_{+}))$
+- Couplage: $Density = p_{0/1} \\cdot Dens_{+}$
+
+',
+sep = "")
+```
+
+```{r RFigDeltaExemple, out.width='50%', fig.cap='(ref:RFigDeltaExempleCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+print(g)
+
+```
+
+```{r R_DeltaCoupling.T, purl=purl.T}
+# Coupling the two sub-models ==================================================
+# Sub-models selected ----
+dataset.orig <- mutate(dataset.orig, Presence = 1*(Density > 0))
+dataset.posit <- filter(dataset.orig, Presence == 1)
+
+# Save dataset
+readr::write_rds(dataset.orig, path = paste0(saveWD, "/dataset.orig.rds"))
+
+# Run models
+Dens01.glm <- glm(Presence ~ Bathy_c + Sedim,
+                  family = binomial, data = dataset.orig)
+Densposit.glm <- glm(log(Density) ~ poly(Bathy, 3),
+                     family = gaussian, data = dataset.posit)
+
+```
+```{r R_DeltaCoupling.S, eval=eval.S, purl=purl.S}
+# Coupling the two sub-models ==================================================
+# Sub-models selected ----
+dataset.orig <- ...
+dataset.posit <- ...
+
+# Save dataset
+readr::write_rds(dataset.orig, path = paste0(saveWD, "/dataset.orig.rds"))
+
+# Run models
+Dens01.glm <- glm(Presence ~ ...,
+                  family = ..., data = dataset.orig)
+Densposit.glm <- glm(Density ~ ...,
+                     family = ..., data = dataset.posit)
+
+```
+
+```{r EN_DeltaDataPred, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('
+### Comparison with observations
+Average calculated with the Delta model can be compared to observations (Fig. \\@ref(fig:RFigCouplingObsPred)). However, you must remember the original distribution of the data (Fig. \\@ref(fig:RFigDeltaVar)). It is not expected that predictions perfectly fit with observations. A Delta model is to calculate the average observations according to a combination of covariates. This average does not represent the variability of observations, neither the high amount of absences, not the sparse high densities. To be able to perfectly predict this variability, this would require to use the environmental conditions covariates that explain it. Thus, the model used here do not account for all environmental effects, but it give a good average view of the densities according to the main covariates.
+
+(ref:RFigCouplingObsPredCap) Predictions compared to observations. Right panel is a zoom of left panel.
+
+(ref:RFigDeltaVarCap) (a) Shape of distribution of a Delta model. Uncertainty representation with (b) mean and 2*standard deviation, (c) median and quantiles 10% - 90%.
+', sep = "")
+```
+```{r FR_DeltaDataPred, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('
+### Comparaison avec les observations
+La prédiction moyenne calculée avec le modèle Delta peut être comparée aux observations (Fig. \\@ref(fig:RFigCouplingObsPred)). Cependant, vous devez vous souvenir de la distribution originale des données (Fig. \\@ref(fig:RFigDeltaVar)). Un modèle Delta c\'est l\'estimation de la moyenne des observations en fonction d\'une combinaison de covariables. Cette moyenne ne représente pas la variabilité des observations, ni la proportion d\'absences, ni les quelques fortes valeurs de densités observées. Pour prédire parfaitement la variabilité des observations, il faudrait intégrer les covariables evironnementales qui l\'explique. Le modèle développé ici n\'intègre pas la totalité des effets environnementaux, mais il donne une bonne idée des densités moyennes observées en fonction des covariables sélectionnées.
+
+(ref:RFigCouplingObsPredCap) Prédictions comparées aux observations. La figure de droite est un zoom de celle de gauche.
+
+(ref:RFigDeltaVarCap) (a) Forme de distribution issue d\'un modèle Delta. Représentation de l\'incertitude (b) moyenne et 2*écart-type, (c) médiane et quantiles 10% - 90%.
+', sep = "")
+```
+
+```{r R_CouplingObsPred, purl=TRUE}
+# Predict and compare to observations ----
+# Comment 1
+# Formula for the expected mean of a Bernouilli-glm model
+# E(X) = E(X | Ip=1)*p(Ip=1) + E(X | Ip=0)*p(Ip=0) = E(X | Ip=1)*p(Ip=1)
+# The variance V(X) is not easy to obtain
+
+# Comment 2
+# Fitted values have not the same dimension for the 2 models
+# The model on positive values is done on a subset of the data only
+# ==> We must use the predict.glm() function to build predictions
+
+# Expected mean of the presence probability
+presence.pred <- predict.glm(Dens01.glm, newdata = dataset.orig,
+                             type = "response", se = FALSE)
+
+# The following script is valuable for a Gaussian GLM() on log-transformed value
+# Expected mean of the log-density from the glm model
+E.logdens.pos <- predict.glm(Densposit.glm, newdata = dataset.orig,
+                             type = "response", se = FALSE)
+
+# Expected mean of the density (if lm() on log-transformed data has ben used)
+# The so-called Laurent correction
+var.logdens.pos <- var(residuals(Densposit.glm))
+E.dens.pos <- exp(E.logdens.pos + 0.5 * var.logdens.pos)
+
+# Delta model : Expected mean of conditional model
+E.dens <- presence.pred * E.dens.pos
+
+```
+```{r RFigCouplingObsPred, out.width='45%', fig.cap='(ref:RFigCouplingObsPredCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher"), fig.show='hold'}
+# Plot observations vs predictions
+dataset.orig <- mutate(dataset.orig, DeltaPred = E.dens)
+
+ggplot(dataset.orig, aes(Density, DeltaPred)) +  
+  geom_point() +
+  geom_jitter(width = 0, height = 15) +
+  geom_abline(slope = 1, intercept = 0, col = "red") +
+  theme_classic()
+
+ggplot(dataset.orig, aes(Density, DeltaPred)) +  
+  geom_point() +
+  stat_bin2d(aes(fill = ..count.., alpha = ..count..), bins = 300) +
+  coord_cartesian(xlim = c(0, 20), ylim = c(0, 20)) +
+  geom_abline(slope = 1, intercept = 0, col = "red") +
+  scale_fill_gradient(low = "yellow", high = "red") +
+  scale_alpha_continuous(range = c(0.1, 0.8)) +
+  guides(fill = FALSE, alpha = FALSE) +
+  theme_classic()
+
+# Warning : these are delta data, moreover with positive lognormal values
+# Confidence intervals cannot be calculated with classical formula, they are not symetric
+# Estimation errors is here a complex problem
+
+```
+
+```{r RFigDeltaVar, out.width='75%', fig.cap='(ref:RFigDeltaVarCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher"), fig.show='last', results='hide'}
+gdataset <- filter(dataset.orig, Density < 30, Year %in% c(1990:2004))
+g1 <- ggplot(gdataset) +
+  geom_histogram(aes(Density), bins = 30) +
+  coord_cartesian(xlim = c(-10, 30)) +
+  ylab(NULL)
+
+g2 <- ggplot(gdataset) +
+  stat_summary(aes(x = "mean_sd", y = Density), fun.data = "mean_sdl") +
+  coord_flip(ylim = c(-10, 30)) +
+  xlab(NULL)
+    
+g3 <- ggplot(gdataset) +
+  stat_summary(aes(x = "med_quant", y = Density), fun.y = median,
+               fun.ymin = function(x) quantile(x, 0.1),
+               fun.ymax = function(x) quantile(x, 0.9),
+               geom = "crossbar") +
+  coord_flip(ylim = c(-10, 30)) +
+  xlab(NULL)
+
+g <- cowplot::plot_grid(g1, g2, g3, labels = c("(a)", "(b)", "(c)"),
+                        ncol = 1, rel_heights = c(3, 1, 1), align = "v")
+g
+rm(g);dev.off()
+```
+
+```{r EN_DeltaPredict, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('
+### Predictions
+The model can be used for predictions on a new dataset (Fig. \\@ref(fig:RFigDeltaPredict)). With these models, it is really easy to calculate predictions for any value of covariates, but you should not predict out of the range of covariates observation (Fig. \\@ref(fig:RFigOutBoundFit)). The number of observations in the different combination of covariates should also be taken into account, which is why exploration of the dataset in very important. Moreover, when using a log-transformation, a little difference may become very high at the scale of the reponse.
+
+(ref:RFigDeltaPredictCap) Prediction of averages for the different combination of covariates
+
+(ref:RFigOutBoundFitCap) Illustration of model fitted on log-densities and extrapolations
+', sep = "")
+```
+```{r FR_DeltaPredict, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('
+### Prédictions
+Le modèle peut être utilisé pour prédire sur un nouveau jeu de données (Fig. \\@ref(fig:RFigDeltaPredict)). Avec ces modèles, il est très simple de calculer des prédictions pour n\'importe quelle valeur des covariables, cependant, il est important de ne jamais prédire en dehors de l\'étendue des valeurs de covariables observées (Fig. \\@ref(fig:RFigOutBoundFit)). Le nombre d\'observation dans les différentes combinaisons de covariables a aussi de l\'importance, c\'est pourquoi l\'exploration des données est nécessaire. De plus, en utilisant une transformation log des données, une petite différence de prédiction peut devenir très élevée dans l\'échelle d\'origine des données.
+
+(ref:RFigDeltaPredictCap) Prédiction des moyennes pour les différentes combinaisons des covariables
+
+(ref:RFigOutBoundFitCap) Illustration de modèles ajustés sur les densités log-transformées et leurs extrapolations
+', sep = "")
+```
+
+```{r RFigDeltaPredict, out.width='60%', fig.cap='(ref:RFigDeltaPredictCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+# Predictions for new places with known covariates -----------------------------
+# Dowload the file with factors for predictions
+predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),
+                                 delim = ";")
+
+# Expected mean of the presence probability
+presence.pred <- predict.glm(Dens01.glm, newdata = predictions,
+                             type = "response", se = FALSE)
+
+# Expected mean of the log-density from the glm model
+E.logdens.pos <- predict.glm(Densposit.glm, newdata = predictions,
+                             type = "response", se = FALSE)
+
+# Expected mean of the density (if lm() on log-transformed data has ben used)
+# The so-called Laurent correction
+var.logdens.pos <- var(residuals(Densposit.glm))
+E.dens.pos <- exp(E.logdens.pos + 0.5 * var.logdens.pos)
+
+# Delta model : Expected mean of conditional model
+E.dens <- presence.pred * E.dens.pos
+
+# Compute predictions (in the scale of the response)
+pred.Density <- mutate(predictions,
+                       PA = presence.pred,
+                       pos = E.logdens.pos,
+                       exp.pos = E.dens.pos,
+                       fit = E.dens) %>%
+  group_by(Sedim, Bathy_c) %>%
+  summarise(mean.fit = mean(fit))
+
+ggplot(pred.Density, aes(Bathy_c, mean.fit, colour = Sedim)) +
+  geom_point(cex = 2) +
+  theme(legend.position = "bottom")
+
+```
+```{r R_DeltaPredict.S, purl=purl.S, eval=eval.S}
+# Predictions for new places with known covariates -----------------------------
+# Dowload the file with factors for predictions
+predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),
+                                 delim = ";")
+predictions
+
+# Expected mean of the presence probability
+presence.pred <- predict.glm(Dens01.glm, newdata = predictions,
+                             type = "response", se = FALSE)
+
+# Expected mean of the log-density from the glm model
+E.logdens.pos <- predict.glm(Densposit.glm, newdata = predictions,
+                             type = "response", se = FALSE)
+
+# Expected mean of the density (if lm() on log-transformed data has ben used)
+# The so-called Laurent correction
+var.logdens.pos <- var(residuals(Densposit.glm))
+E.dens.pos <- exp(E.logdens.pos + 0.5 * var.logdens.pos)
+
+# Delta model : Expected mean of conditional model
+E.dens <- presence.pred * E.dens.pos
+
+```
+```{r RFigOutBoundFit, out.width='60%', fig.cap='(ref:RFigOutBoundFitCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+# Example of fit out of covariates bounds ----
+ggplot(dataset.posit, 
+       aes(x = -Bathy, y = log(Density))) +
+  geom_point(cex = 0.8, col = "grey") +
+  geom_boxplot(aes(group = cut_width(-Bathy, 2)),
+               position = position_identity()) +
+  # stat_summary(aes(x = round(-Bathy))) +
+  geom_smooth(method = "glm", formula = y ~ x, 
+              aes(colour = "y~x"), se = FALSE, fullrange = TRUE) +
+  geom_smooth(method = "glm", formula = y ~ poly(x, 2), 
+              aes(colour = "y~poly(x,2)"), se = FALSE, fullrange = TRUE) +
+  geom_smooth(method = "glm", formula = y ~ poly(x, 3), 
+              aes(colour = "y~poly(x,3)"), se = FALSE, fullrange = TRUE) +
+  xlim(0, 28) +
+  theme_classic()
+
+```
+
+```{r EN_DeltaConclusion, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('
+## Conclusion
+
+- Separation of absence data and positive values
+    + Built a model adapted to binomial data
+    + Built a model adapted to large distributed positive values
+    + Goodness of fit on sub-models better than on raw data
+
+- Coupling of both sub-models
+    + Reliable biological interpretation
+    + Question on uncertainty calculation
+
+- Predictions : Habitat suitability index
+', sep = "")
+```
+```{r FR_DeltaConclusion, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('
+## Conclusion
+
+- Séparation des absences et des données positives
+    + Construction d\'un modèle adapté aux données binomiales
+    + Construction d\'un modèle adapté aux données positives à large distribution
+    + Qualité d\'ajustement sur les sous-modèles meilleure que sur les données brutes
+
+- Couplage des deux sous-modèles
+    + Interprétation biologique sensée
+    + Question de l\'estimation de l\'incertitude
+
+- Prédictions : Indice de qualité des habitats
+', sep = "")
+```

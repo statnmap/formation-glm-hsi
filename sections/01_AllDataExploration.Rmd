@@ -1,0 +1,629 @@
+<!-- SpatialGLM course - All data exploration -->
+  
+```{r EN_DataExploration, eval=(lang == "EN"), results='asis'}
+cat('
+# Data Exploration
+## Outlines\n',
+styleFmt("Remember: Define what you are looking for, which question you try to answer!", "advert"),
+'\n
+- Explore the balance of the sampling plan among the environmental covariates
+- Explore the values of the observations against environmental covariates to detect potential correlations
+- Explore interactions between covariates effects on observations
+- Explore the possible distribution forms (gaussian, log-normal, ...) of observations on combination of covariates.',
+'\n',
+beginStyleFmt("redbox", "p"),
+'Scripts below are just giving some examples, but are not playing the best solutions !  
+Try your own !',
+endStyleFmt("redbox", "p"),
+'\n 
+    ', sep = "")
+```
+
+```{r FR_DataExploration, eval=(lang == "FR"), results='asis'}
+cat('
+# Exploration des données
+## Étapes\n',
+styleFmt("Souvenez-vous : Définissez ce que vous cherchez, à quelles questions vous souhaiteriez répondre !", "advert"),
+'\n
+- Explorer la répartition du plan d\'échantillonnage en fonction des covariables environementales
+- Explorer les données d\'observation au regard des covariables environnementales pour détecter de potentielles corrélations
+- Explorer les interactions entre les effets des covariables sur les observations
+- Explorer les lois de distribution possibles (gaussian, log-normal, ...) des observations en fonctions des combinaisons de covariables',
+'\n',
+beginStyleFmt("redbox", "p"),
+'Les scripts qui sont fournis ne sont que des exemples, ils ne sont en aucun cas les meilleures solutions !
+Faîtes vos propres tests !',
+endStyleFmt("redbox", "p"),
+'\n 
+    ', sep = "")
+```
+```{r R_Remember, echo=FALSE, purl=TRUE}
+# REMEMBER ====-----------------------------------------------------------------
+# Define what you are looking for, which question you try to answer!
+
+# EXPLORATION OF THE DATA
+# - Explore the balance of the sampling plan among the environmental covariates
+# - Explore the values of the observations against environmental covariates to detect potential correlations
+# - Explore interactions between covariates effects on observations
+# - Explore the possible distribution forms (gaussian, log-normal, ...) of observations on combination of covariates.
+
+# ==== WARNING ====
+# Scripts below are just giving some examples, but are not playing "best" models ! 
+# Try other solutions, build your own ! 
+
+```
+
+```{r EN_ReadDataset, eval=(lang == "EN"), results='asis'}
+cat('## List of the different steps  
+    
+- Read the spatial dataset (Fig. \\@ref(fig:RFigData',
+ifelse(!eval.widget, "GG", "LL"),
+'))
+    
+(ref:RFigDataCap) Distribution of sampling stations',
+sep = "")
+```
+```{r FR_ReadDataset, eval=(lang == "FR"), results='asis'}
+cat('## Liste des différentes étapes
+    
+- Lire le jeu de données spatialisé (Fig. \\@ref(fig:RFigData',
+ifelse(!eval.widget, "GG", "LL"),
+'))
+    
+(ref:RFigDataCap) Répartition des stations d\'échantillonnage',
+sep = "")
+```
+```{r R_LoadData.T, purl=purl.T, results='hide'}
+# Get data --------------------------------------------------------------------
+# Load Coastlines shapefile
+Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84") 
+
+# Load the data shapefile
+# dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+```
+```{r R_LoadData.S, purl=purl.S, eval=eval.S}
+# Get data --------------------------------------------------------------------
+# Load Coastlines shapefile
+Coasts_Vilaine_wgs84 <- readOGR(...) 
+
+# Load the data shapefile
+# Stations_covariates_wgs84 <- readOGR(...)
+# names(Stations_covariates_wgs84)[9:16] <- 
+#   c("SeaLim", "Coast", "Zone_bio", "Sedim", "id", "Bathy", "Pente", "TPI")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+```
+
+```{r RFigData, purl=TRUE, fig.keep='none'}
+# Plot data
+plot(Stations_covariates_wgs84)
+plot(Coasts_Vilaine_wgs84, usePolypath = F, lwd = 2, col = "grey", add = TRUE)
+box()
+```
+
+```{r RFigDataGG, purl=purl.T.ggplot, out.width='90%', eval=!eval.widget, fig.align='center', fig.cap='(ref:RFigDataCap)', fig.width=9}
+sp.limits <- extend(extent(Stations_covariates_wgs84), c(0.1, 0.05))
+map.limits <- extend(extent(Stations_covariates_wgs84), c(0.2, 0.1))
+map <- get_map(bbox(map.limits), source = "google",
+               filename = paste0(saveWD, "/get_map"))
+
+g <- ggmap(map, extent = "normal", maprange = FALSE) +
+  geom_point(data = Stations_covariates_wgs84@data, aes(lon, lat),
+             col = "red", alpha = 0.1) +
+  coord_map(xlim = c(xmin(sp.limits),
+                     xmax(sp.limits)),
+            ylim = c(ymin(sp.limits),
+                     ymax(sp.limits))) +
+  theme_minimal()
+print(g)
+
+```
+```{r RFigDataLL, purl=purl.T.ggplot, out.width='100%', eval=eval.widget, fig.align='center', fig.cap='(ref:RFigDataCap)', fig.height=4.5}
+# Leaflet map
+m <- leaflet(data = Stations_covariates_wgs84) %>%
+  addTiles(
+    urlTemplate = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png") %>%
+  addMarkers(clusterOptions = markerClusterOptions()) %>%
+  addCircleMarkers(radius = 5, fillOpacity = 0.5, stroke = FALSE)
+m  # Print the map
+
+```
+
+
+```{r EN_BathyCov, eval=(lang == "EN"), results='asis'}
+cat('
+- Add a new covariate: bathymetry divided in classes
+    + " < 5 m", "5-10 m", "10-20 m", "20-50 m"
+')
+```
+```{r FR_BathyCov, eval=(lang == "FR"), results='asis'}
+cat('
+- Ajouter une nouvelle covariable : la bathymétrie divisée en classes
+    + " < 5 m", "5-10 m", "10-20 m", "20-50 m"
+')
+```
+
+```{r R_PrepareData.T, purl=purl.T, results='hide'}
+# Transform to non-spatial dataset
+dataset.tmp <- as.tbl(Stations_covariates_wgs84@data)
+dataset.tmp
+dim(dataset.tmp)
+summary(dataset.tmp)
+names(dataset.tmp)
+
+# Clean dataset
+names(dataset.tmp) <- gsub("_pt", "", names(dataset.tmp))
+
+# Add a new covariate: bathymetry as class factor covariate
+# c("1depth < 5 m", "2depth 5 - 10 m", "3depth 10 - 20 m", "4depth 20 - 50 m")
+dataset <- dataset.tmp %>%
+  mutate(Bathy_c = 
+           cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+               labels = c("1depth < 5m", "2depth 5-10m",
+                          "3depth 10-20m", "4depth 20-50m"),
+               include.lowest = TRUE)) %>%
+  # dplyr::select(-matches("coords"), -optional, -id) %>%
+  dplyr::select(lat:Density, Sedim, Bathy, Bathy_c) %>%
+  mutate(Year = as.factor(as.character(Year)))
+
+rm(dataset.tmp)
+
+```
+```{r R_PrepareData.S, purl=purl.S, eval=eval.S}
+# Transform to non-spatial dataset
+dataset <- as.tbl(Stations_covariates_wgs84@data)
+
+# Clean dataset names
+names(dataset) <- gsub("_pt", "", names(dataset))
+
+# Add a new covariate: bathymetry as class factor covariate using cut
+# c("1depth < 5m", "2depth 5-10m", "3depth 10-20 m", "4depth 20-50 m")
+dataset$Bathy_c <- cut(-dataset$Bathy, ..., include.lowest = TRUE)
+
+```
+```{r R_DataFilterQuick.ST, purl=!ClassicWay, eval=!ClassicWay}
+# Extract dataset with only positive values
+dataset <- dataset %>%
+  dplyr::filter(Density > 0)
+```
+
+```{r EN_DataBalance, eval=(lang == "EN"), results='asis'}
+cat('
+- Explore the balance of data against covariates
+    + Focus on year, bathymetry and sediment
+    + ', styleFmt("What do you see ?", "exo"), '
+', sep = "")
+```
+```{r FR_DataBalance, eval=(lang == "FR"), results='asis'}
+cat('
+- Explorer la répartition des observations en fonctions des covariables
+    + Centrer l\'analyse sur l\'année, la bathymétrie et le sédiment
+    + ', styleFmt("Que remarquez-vous ?", "exo"), '
+', sep = "")
+```
+
+```{r R_DataBalance.T, purl=purl.T, results='hide'}
+# Explore data -----------------------------------------------------------------
+# _Balance of sampling plan ----
+levels(dataset$Year)
+levels(dataset$Bathy_c)
+levels(dataset$Sedim)
+
+table(dataset$Year, dataset$Sedim)
+table(dataset$Year, dataset$Bathy_c)
+table(dataset$Bathy_c, dataset$Sedim)
+
+ftable(table(dataset$Year, dataset$Bathy_c, dataset$Sedim))
+
+# Comments FACTORIAL Plan
+# - Absence of some years
+# - Few data in high bathymetry
+# - More data on "mud" than on "sand"
+# - bathy / sediment relation : mud with low bathy // sand with low bathy
+# - High bathy * Sand = no data
+
+```
+```{r R_DataBalance.S, purl=purl.S, eval=eval.S}
+# Explore data -----------------------------------------------------------------
+# _Balance of sampling plan ----
+levels(dataset$Bathy_c)
+
+table(dataset$Year, dataset$Sedim)
+
+ftable(table(dataset$Year, dataset$Bathy_c, dataset$Sedim))
+
+```
+
+```{r EN_CovEffect.T, eval=(lang == "EN" & Version ==  "Teacher"), results='asis'}
+cat('
+- Explore potential covariates effects on densities
+    + ', styleFmt("Which covariates may have an influence ?", "exo"), 
+'(Fig. \\@ref(fig:RFigHistGG))  
+
+(ref:RFigHistCap) log Densities compared with bathymetry and sediment
+', sep = "")
+```
+```{r FR_CovEffect.T, eval=(lang == "FR" & Version ==  "Teacher"), results='asis'}
+cat('
+- Explorer les covariables ayant potentiellement des effets sur les densités
+    + ', styleFmt("Quelles covariables pourraient avoir une influence ?", "exo"), 
+'(Fig. \\@ref(fig:RFigHistGG))  
+
+(ref:RFigHistCap) Densités (log-transformées) en fonction de la bathymétrie et des sédiments
+', sep = "")
+```
+```{r EN_CovEffect.S, eval=(lang == "EN" & Version ==  "Student"), results='asis'}
+cat('
+- Explore potential covariates effects on densities
+    + ', styleFmt("Which covariates may have an influence ?", "exo"), 
+sep = "")
+```
+```{r FR_CovEffect.S, eval=(lang == "FR" & Version ==  "Student"), results='asis'}
+cat('
+- Explorer les covariables ayant potentiellement des effets sur les densités
+    + ', styleFmt("Quelles covariables pourraient avoir une influence ?", "exo"), 
+sep = "")
+```
+```{r R_CovEffect.T, purl=purl.T, eval=purl.T, results='hide', fig.keep='none'}
+# _Covariates potential effect ----
+# Simple plot of the data
+par(mfrow = c(1, 2))
+plot(dataset$Density)
+plot(log(dataset$Density + 1))
+
+# Plot the data by class of factors
+ggplot() +
+  geom_point(data = dataset, aes(Bathy, Density)) +
+  facet_wrap(~Sedim)
+
+pairs(Density ~ Bathy * Sedim, data = dataset)
+# Comment: This graph is not well adpated to qualitative covariates 
+# but it can be very useful for quantitative covariates
+GGally::ggpairs(dataset, columns = 4:7)
+
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Density),
+                 bins = 30, fill = "cyan", col = "grey20")
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+g + facet_wrap(~Sedim)
+g + facet_grid(Bathy_c ~ Sedim)
+
+ggplot(dataset) +
+  geom_histogram(aes(log(Density + 1)),
+                 bins = 30, fill = "orange", col = "grey40") +
+  facet_grid(Bathy_c ~ Sedim)
+
+# Boxplots (ggplot2)
+ggplot(dataset) +
+  geom_boxplot(aes(x = "", y = Density))
+
+ggplot(dataset) +
+  geom_boxplot(aes(x = Bathy_c, y = Density, fill = Bathy_c))
+ggplot(dataset) +
+  geom_boxplot(aes(x = Sedim, y = Density, fill = Sedim))
+
+ggplot(dataset) +
+  geom_boxplot(aes(x = Bathy_c, y = log(Density + 1), fill = Sedim))
+ggplot(dataset) +
+  geom_boxplot(aes(x = Year, y = log(Density + 1)), fill = "cyan")
+
+```
+```{r RFigHistGG, out.width='100%', fig.cap='(ref:RFigHistCap)', fig.align='center', purl=purl.T, eval=(Version ==  "Teacher")}
+# Distribution among factors
+glog <- ggplot(dataset) +
+  stat_bin(aes(log(Density + 1), fill = Bathy_c),
+           bins = 20, alpha = 0.3, position = "identity",
+           geom = "area", col = "grey30") +
+  facet_wrap(~Sedim)
+glog
+
+```
+```{r R_CovEffect.S, purl=purl.S, eval=eval.S}
+# _Covariates potential effect ----
+# Simple plot of the data
+par(mfrow = c(1, 2))
+plot(dataset$Density)
+plot(log(dataset$Density + 1))
+
+# Plot the data by class of factors
+coplot(dataset$Density ~ dataset$Bathy | dataset$Sedim)
+pairs(Density ~ Bathy * Sedim, data = dataset)
+
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Density))
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+
+# Boxplots
+boxplot(dataset$Density)	
+boxplot(dataset$Density ~ dataset$Bathy_c)
+boxplot(dataset$Density ~ dataset$Bathy_c*dataset$Sedim,
+        border = rep(1 + 1:length(unique(dataset$Bathy_c)), length(unique(dataset$Sedim))))
+
+```
+
+```{r EN_Distributions, eval=(lang == "EN"), results='asis'}
+cat(
+'The statistical models we will use can be summarised as follows:
+$$Density = Covar1 + Covar2 + Noise$$
+As you may know, we always verify if data are gaussian to proceed to statistical analysis. If they are not gaussian, we need to determine the type of the distribution to use data transformation.
+  
+- Explore potential distribution of the dataset
+    + ', styleFmt("What is the most likely distribution ?", "exo"), 
+'
+')
+```
+```{r FR_Distributions, eval=(lang == "FR"), results='asis'}
+cat(
+'Les modèles statistiques que nous allons utiliser peuvent se résumer de cette façon :
+$$Density = Covar1 + Covar2 + Noise$$
+Comme vous le savez, on chercher toujours à savoir si les données sont gaussienne pour pouvoir procéder à l\'analyse statistique. Si elles ne sont pas gaussienne, nous devons définir le type de distribution pour pouvoir utiliser une transformation de données.
+
+- Explorer la distribution des données
+  + ', styleFmt("Quelle est la distribution la plus intéressante ?", "exo"), 
+'
+')
+```
+```{r EN_Distributions.T, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat(
+'Figure \\@ref(fig:RFigDistrib) show some examples of distributions.
+  
+(ref:RFigDistribCap) Different distribution forms  
+')
+```
+```{r FR_Distributions.T, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat(
+'La figure \\@ref(fig:RFigDistrib) montre différents exemples de distributions.
+
+(ref:RFigDistribCap) Différents exemples de distributions  
+')
+```
+```{r RFigDistrib, purl=purl.T, fig.cap='(ref:RFigDistribCap)', fig.align='center', out.width='90%'}
+# Examples of distributions
+ggplot() +
+  stat_function(aes(x = -5:50, col = "normal"), fun = dnorm, n = 201,  
+                args = list(mean = 20, sd = 5), lwd = 1.1) +
+  stat_function(aes(x = -1:70, col = "log-normal1"), fun = dlnorm, n = 201,  
+                args = list(meanlog = log(5), sdlog = 1)) +
+  stat_function(aes(x = -1:80, col = "log-normal2"), fun = dlnorm, n = 201,  
+                args = list(meanlog = log(20), sdlog = 1)) +
+  stat_function(aes(x = -1:10, col = "gamma1"), fun = dgamma, n = 201,  
+                args = list(shape = 5/3, scale = 3)) +
+  stat_function(aes(x = -1:50, col = "gamma2"), fun = dgamma, n = 201,  
+                args = list(shape = 20/3, scale = 3)) +
+  theme(legend.position = "bottom")
+```
+```{r R_DistribData, purl=(Action == "Purl"), eval=(Action == "Purl"), results='hide', fig.keep='none'}
+# _Distribution type of the data ----
+# Tests of normality
+par(mfrow = c(1,2))
+qqnorm(dataset$Density) ; qqline(dataset$Density, col = "red")
+qqnorm(log(dataset$Density + 1)) ; qqline(log(dataset$Density + 1), col = "red")
+
+ks.test(rnorm(1000, 0, 1), pnorm)
+ks.test(dataset$Density, pnorm)
+ks.test(log(dataset$Density + 1), pnorm)
+
+chisq.gof(rnorm(1000, 0, 1), distribution = "normal")
+chisq.gof(log(dataset$Density + 1), distribution = "normal")
+# Comments : these tests are to be used with caution (need lot of data)
+
+# Gamma ?
+Gamma.Hist(dataset$Density + 1)
+
+shape <- mean(dataset$Density) * mean(dataset$Density) / var(dataset$Density)
+chisq.gof(dataset$Density, distribution = "gamma", shape = shape)
+
+```
+
+```{r EN_DistribCovar, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat(
+'Example of two factors effects (Fig. \\@ref(fig:RFigTwoFact))
+
+(ref:RFigTwoFactCap) Different factors effects
+
+- ', styleFmt("What do you think ?", "exo"), 
+'
+')
+```
+
+```{r FR_DistribCovar, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat(
+'Exemple de l\'effet de deux facteurs (Fig. \\@ref(fig:RFigTwoFact))
+
+(ref:RFigTwoFactCap) Differents effets de deux facteurs 
+
+- ', styleFmt("Qu\'en pensez-vous ?", "exo"), 
+'
+')
+```
+
+```{r RFigTwoFact, purl=purl.T, out.width='100%', fig.align='center', fig.cap='(ref:RFigTwoFactCap)', eval=(Version == "Teacher")}
+# Examples of two factors distributions
+pop <- data.frame(size = rnorm(5000, 10, 1),
+                  type = "males", example = "ex1") %>%
+  bind_rows(data.frame(size = rnorm(3000, 12, 3),
+                       type = "females", example = "ex1")) %>%
+  bind_rows(data.frame(size = rnorm(5000, 10, 1),
+                       type = "males", example = "ex2")) %>%
+  bind_rows(data.frame(size = rnorm(3000, 16, 3),
+                       type = "females", example = "ex2"))
+
+ggplot() +
+  stat_bin(data = pop, aes(size, fill = type), 
+           geom = "area", alpha = 0.25, col = "grey45",
+           position = "identity") + 
+  stat_bin(data = pop, aes(size, fill = "all"), 
+           geom = "area", alpha = 0.25, col = "grey15", weight = 1.5) +
+  facet_wrap(~example)
+
+```
+
+```{r R_DistribCovar.T, eval=purl.T, purl=purl.T, fig.keep='none', results='hide'}
+# _Distribution with covariates ----
+# qqplot
+par(mfrow = c(2, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density, dataset$Bathy_c,
+       function(x) {qqnorm(x); qqline(x, col = "red")})
+tapply(log(dataset$Density + 1), dataset$Bathy_c, 
+       function(x) {qqnorm(x); qqline(x, col = "red")})
+
+# Statistical tests
+tapply(log(dataset$Density + 1), dataset$Bathy_c,
+       function(x) {ks.test(x, y = pnorm)})
+tapply(log(dataset$Density + 1), dataset$Bathy_c,
+       function(x) {chisq.gof(x, distribution = "normal")})
+
+# Histograms with Gamma distribution
+par(mfcol = c(1, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density + 1, dataset$Bathy_c, Gamma.Hist)
+
+# Relation  mean (mu) / variance (V) (Gauss: V=cste; Poisson: V=mu; Gamma and lognormal: V=mu^2)
+# To be assessed by combination of significant factors
+dataset.MuVar <- filter(dataset, Density > 0) %>%
+  group_by(Sedim, Bathy_c, Year) %>%
+  summarize(mean = mean(Density), variance = var(Density))
+
+ggplot(dataset.MuVar) +
+  geom_point(aes(x = mean, y = variance)) +
+  stat_function(fun = function(x) x, aes(col = "y=x")) + 
+  stat_function(fun = function(x) 100*x, aes(col = "y=100*x")) + 
+  stat_function(fun = function(x) x^2, aes(col = "y=x^2"))
+
+```
+
+```{r R_DistribCovar.S, purl=purl.S, eval=eval.S}
+# _Distribution with covariates ----
+# qqplot
+par(mfrow = c(2, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density, dataset$Bathy_c,
+       function(x) {qqnorm(x); qqline(x, col = "red")})
+
+# Statistical tests
+tapply(dataset$Density, dataset$Bathy_c,
+       function(x) {ks.test(x, y = pnorm)})
+tapply(dataset$Density, dataset$Bathy_c,
+       function(x) {chisq.gof(x, distribution = "normal")})
+
+# Histograms with Gamma distribution
+par(mfcol = c(1, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density + 1, dataset$Bathy_c, Gamma.Hist)
+
+# Relation  mean (mu) / variance (V)
+# (Gauss: V=cste; Poisson: V=mu; Gamma and lognormal: V=mu^2)
+# To be assessed by combination of factors
+dataset.pos <- dataset[dataset$Density > 0,]
+mean <- tapply(dataset.pos$Density,
+               interaction(dataset.pos$Sedim, 
+                           dataset.pos$Bathy_c,
+                           dataset.pos$Year),
+               mean)
+
+variance <- tapply(dataset.pos$Density,
+                   interaction(dataset.pos$Sedim, 
+                               dataset.pos$Bathy_c,
+                               dataset.pos$Year),
+                   var)
+
+x11()
+plot(mean[order(mean)], variance[order(mean)])
+points(mean[order(mean)], mean[order(mean)],
+       col = "green", lwd = 2, type = "l")
+points(mean[order(mean)], 100*mean[order(mean)],
+       col = "red", lwd = 3, type = "l")
+points(mean[order(mean)], mean[order(mean)]^2,
+       col = "blue", lwd = 3, type = "l")
+
+```
+
+```{r EN_Interactions, eval=(lang == "EN"), results='asis'}
+cat('
+- Explore potential interactions between covariates
+    + ', styleFmt("What do you think ?", "exo"), 
+sep  = "")
+```
+```{r FR_Interactions, eval=(lang == "FR"), results='asis'}
+cat('
+- Explorer les interactions potentielles entre les covariables
+    + ', styleFmt("Qu\'en pensez-vous ?", "exo"), 
+sep = "")
+```
+
+```{r EN_Interactions.T, eval=(lang == "EN" & Version == "Teacher"), results='asis'}
+cat('    + To interpret, use theoretical exemple on Fig. \\@ref(fig:RFigExInteractions)
+
+(ref:RFigExInteractionsCap) Interaction between temperature and treatment
+', sep = "")
+```
+
+```{r FR_Interactions.T, eval=(lang == "FR" & Version == "Teacher"), results='asis'}
+cat('    + Comme aide à l\'interprétation, utiliser l\'exemple théorique de la figure \\@ref(fig:RFigExInteractions)
+
+(ref:RFigExInteractionsCap) Interaction entre traitements et température
+', sep = "")
+```
+
+```{r RFigExInteractions, purl=purl.T, fig.cap='(ref:RFigExInteractionsCap)', out.width='80%', eval=(Version == "Teacher"), fig.align='center'}
+pop <- data.frame(treatment = sample(c(1, 2), 200, replace = TRUE),
+                  temp = round(runif(200, 10, 12))) %>% as.tbl %>%
+  mutate(y_noInt = treatment +
+           temp - 0.2 * temp * (temp >= 12) +
+           rnorm(200, 0, 1),
+         y_Int = treatment + 
+           ifelse(treatment == 1, 
+                  temp - 0.2 * temp * (temp >= 12),
+                  temp + 0.1 * temp * (temp >= 12)) +
+           rnorm(200, 0, 1)
+  ) %>%
+  tidyr::gather(Interaction, size, -treatment, -temp) %>%
+  mutate(treatment = factor(treatment),
+         temp = factor(temp))
+
+ggplot(pop) + 
+  geom_boxplot(aes(x = temp, y = size,
+                   fill = treatment),
+               position = "identity", alpha = 0.5) +
+  facet_wrap(~Interaction) +
+  theme(legend.position = "bottom")
+
+```
+
+```{r R_Interactions.T, eval=purl.T, purl=purl.T, fig.keep='none'}
+# _Interactions between covariates ----
+# Density
+par(mfrow = c(2, 1))
+interaction.plot(x.factor = dataset$Bathy_c, trace.factor = dataset$Year,
+                 response = dataset$Density)
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Year,
+                 response = dataset$Density)
+
+# log density
+par(mfrow = c(2, 2))
+interaction.plot(x.factor = dataset$Bathy_c,  trace.factor = dataset$Year,
+                 response = log(dataset$Density + 1))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Year,
+                 response = log(dataset$Density + 1),  col = rainbow(15))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Bathy_c,
+                 response = log(dataset$Density + 1) )
+
+```
+```{r R_Interactions.S, purl=purl.S, eval=eval.S}
+# _Interactions between covariates ----
+# Density
+interaction.plot(x.factor = dataset$Bathy_c, trace.factor = dataset$Year,
+                 response = dataset$Density)
+
+# log density
+interaction.plot(x.factor = dataset$Bathy_c,  trace.factor = dataset$Year,
+                 response = log(dataset$Density + 1))
+
+```

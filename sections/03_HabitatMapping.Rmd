@@ -1,0 +1,331 @@
+```{r wdfigHSI}
+# Supplementary library
+library(rasterVis)
+# Folder where to save outputs from R
+figPresWD <- paste0(wd, "/03_Figures/00_Presentation")
+```
+
+```{r EN_DeltaPresentationHSI, eval=(lang == "EN"), results='asis'}
+cat('
+# Habitat mapping
+## Outlines
+To realise a species distribution map of the species (Fig. \\@ref(fig:figProcedureHSI)), we need:
+
+- A habitat suitability model
+    + Habitat suitability index
+    + Model: $Density \\sim Bathymetry + Sediment$
+- Complete maps of covariates
+- Map of model predictions
+
+(ref:figProcedureHSICap) Procedure to map species distribution
+', sep = "")
+```
+```{r FR_DeltaPresentationHSI, eval=(lang == "FR"), results='asis'}
+cat('
+# Modèle d\'habitat
+## Étapes
+La réalisation d\'une carte de distribution d\'espèce (Fig. \\@ref(fig:figProcedureHSI)) nécessite :
+
+- Un modèle d\'habitat potentiel
+    + Indice de qualité d\'habitat
+    + Modèle: $Density \\sim Bathymetry + Sediment$
+- Les cartes complètes des covariables
+- Une carte des prédictions du modèle
+
+(ref:figProcedureHSICap) Procédure pour cartographier une distribution d\'espèce
+', sep = "")
+```
+
+```{r figProcedureHSI, out.width='70%', fig.cap='(ref:figProcedureHSICap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/Schema_Modele.png"))
+```
+
+```{r EN_DeltaRasterPred, eval=(lang == "EN"), results='asis'}
+cat('
+An easy way to map predictions is to create a raster gathering all map of covariates required, and use the model to predict in each cell (Fig. \\@ref(fig:figRasterHSI)).
+
+(ref:figRasterHSICap) Habitat suitability index prediction for each cell of a raster map
+', sep = "")
+```
+```{r FR_DeltaRasterPred, eval=(lang == "FR"), results='asis'}
+cat('
+Une manière simple de réaliser la carte des prédictions est de créer un raster qui rassemble l\'information de toutes les cartes des covariables nécessaires, puis d\'utiliser le modèle pour prédire dans chaque cellule du raster (Fig. \\@ref(fig:figRasterHSI)).
+
+(ref:figRasterHSICap) Prédiction de densité pour chaque cellule d\'une carte au format raster
+', sep = "")
+```
+
+```{r figRasterHSI, out.width='70%', fig.cap='(ref:figRasterHSICap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/HSI.png"))
+```
+
+```{r EN_HSIDataPrep, eval=(lang == "EN"), results='asis'}
+cat('
+## Data preparation
+To be able to predict on the raster, layers should be named with the same name than dataset columns. Moreover, a raster is a matrix of numeric values, class factor covariates should be converted to numeric factor covariates such that levels in the raster exist in the data, thus in the models. ', styleFmt('But be careful that factors stay factors and are not accounted as numeric values in the models !', 'advert'), '
+
+## Predictions
+Function ', styleFmt('predict', 'codecommand'), ' has a method to be used directly with Raster objects (Fig. \\@ref(fig:RFigHSIMap)).
+
+(ref:RFigHSIMapCap) Prediction of sole densities in the Bay of Vilaine. Color scale according to quantiles of raw observations (10%, 50%, 75%, 95%).
+', sep = "")
+```
+```{r FR_HSIDataPrep, eval=(lang == "FR"), results='asis'}
+cat('
+## Préparation des données
+Pour pouvoir faire les prédictions dans le raster, ses couches doivent avoir le même nom que les colonnes du jeu de données. De plus, un raster est une matrice de valeurs numériques, ce qui oblige à convertir les covariables en classe en valeurs numériques, de telle sorte que les niveau de facteur du raster correspondent à ceux des données, et donc existent dans les modèles. ',styleFmt('Soyez prudents avec la conversion vers des valeurs numériques, les données doivent rester au format facteur et ne doivent pas être utilisées comme valeurs numériques dans les modèles !', 'advert'),'
+
+## Prédictions
+La fonction ', styleFmt('predict', 'codecommand'), ' a une méthode pour pouvoir être utilisée directement sur un objet Raster (Fig. \\@ref(fig:RFigHSIMap)).
+
+(ref:RFigHSIMapCap) Prédiction des densités de soles en baie de Vilaine. Échelle de couleur en fonction des quantiles des données originales (10%, 50%, 75%, 95%).
+', sep = "")
+```
+
+```{r R_HSIModels, purl=TRUE}
+# Species distribution model ===================================================
+# Data preparation
+dataset.orig <- readr::read_rds(paste0(saveWD, "/dataset.orig.rds")) %>%
+  mutate(Sediment_class = as.factor(as.numeric(Sedim)),
+         Bathy_class = as.factor(as.numeric(Bathy_c)))
+dataset.posit <- filter(dataset.orig, Presence == 1)
+
+# Read multi-layer raster
+RastForPred.orig <- stack(paste0(saveWD, "/RastForPred_L93.grd"))
+# Modify raster layers for predictions
+# Bathy_c = cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+#                labels = c("1depth < 5m", "2depth 5-10m",
+#                           "3depth 10-20m", "4depth 20-50m"),
+#                include.lowest = TRUE)
+RastForPred_L93 <- stack(raster(RastForPred.orig, "bathy_L93"), 
+                     cut(-1 * raster(RastForPred.orig, "bathy_L93"),
+                         breaks = c(min(-dataset.orig$Bathy), 5, 10, 20,
+                                    max(-dataset.orig$Bathy, 50)),
+               include.lowest = TRUE),
+                     raster(RastForPred.orig, "Sediment_area_L93"))
+names(RastForPred_L93) <- c("Bathy", "Bathy_class", "Sediment_class")
+# Remove Rocks from Sediment_class raster
+values(RastForPred_L93)[which(values(RastForPred_L93)[,3] == 4),3] <- NA
+# Unproject Raster into wgs84
+RastForPred <- projectRaster(
+  RastForPred_L93, 
+  crs = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"),
+  method = "ngb")
+
+```
+```{r ModelsHSI.S, purl=purl.S, eval=eval.S}
+# Run models
+Dens01.glm <- glm(Presence ~ ...,
+                  family = ..., data = dataset.orig)
+Densposit.glm <- glm(...,
+                     family = ..., data = dataset.posit)
+
+```
+```{r ModelsHSI.T, purl=purl.T}
+# Run models
+Dens01.glm <- glm(Presence ~ Bathy_class + Sediment_class,
+                  family = binomial, data = dataset.orig)
+Densposit.glm <- glm(log(Density) ~ poly(Bathy, 3),
+                     family = gaussian, data = dataset.posit)
+
+```
+
+```{r HSIPredict, purl=TRUE}
+# Predict a young sole density for each cell of the grid ----
+# Function to predict with raster objects
+predmod <- function(object, newdata) {
+  res <-
+  predict.glm(object, newdata, se.fit = FALSE, type = "response")
+  res
+}
+
+pred.pres <- predict(object = RastForPred, model = Dens01.glm,
+                     fun = predmod, index = 1)
+pred.logdens.pos <- predict(object = RastForPred, model = Densposit.glm,
+                            fun = predmod, index = 1)
+
+# Expected mean of the density (if lm() on log-transformed data has ben used)
+# The so-called Laurent correction
+var.logdens.pos <- var(residuals(Densposit.glm))
+pred.dens.pos <- exp(pred.logdens.pos + 0.5 * var.logdens.pos)
+
+# Combine the 2 sub-models
+pred.dens <- pred.pres * pred.dens.pos
+
+```
+
+```{r RFigHSIMap, purl=purl.T, out.width='90%', fig.cap='(ref:RFigHSIMapCap)', fig.align='center', fig.keep='last', message=FALSE}
+# Coastlines
+Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84",
+                                verbose = FALSE) %>%
+  broom::tidy()
+
+# Combine all predictions
+r.Predict <- stack(pred.pres, pred.logdens.pos, pred.dens.pos, pred.dens)
+names(r.Predict) <- c("1.presence", "2a.log.pos", "2b.pos", "3.delta.pred")
+
+plot(r.Predict)
+
+# Only predictions
+brk <- c(0,
+         quantile(dataset.orig$Density, c(0.1, 0.5, 0.75, 0.95)),
+         maxValue(pred.dens))
+
+gplot(pred.dens) +
+  geom_tile(aes(x, y, fill = value)) +
+  geom_polygon(data = Coasts_Vilaine_wgs84, aes(long, lat, group = group),
+               fill = "grey", col = "black") +
+  coord_quickmap(xlim = c(xmin(r.Predict), xmax(r.Predict)),
+                  ylim = c(ymin(r.Predict), ymax(r.Predict))) +
+  scale_fill_gradientn(na.value = NA, colours = rev(heat.colors(5)), 
+                       values = scales::rescale(brk), guide = "legend")
+
+
+```
+
+```{r EN_HSIConclusion, eval=(lang == "EN"), results='asis'}
+cat('# Conclusion
+## Modelling
+
+- **Importance of data exploration**
+    + Validation of data
+    + Distribution law
+    + Options for models
+- **Model analysis: iterative approach**
+    + Choice of the distribution law
+    + Choice of covariates combination
+    + Verify hypothesis
+        + Tests on residuals
+        + Quality criteria
+- **Keep your objectives in mind !**
+
+## Delta model approach
+
+- **Purpose of the Delta model**
+    + Raw data can not be modelled
+    + Ecological meaning
+    + Presence & density: not systematically the same covariates
+- **Use of Delta model**
+    + Useful predictions
+    + Sub-model parameters not meaningful in the coupled model
+- **Alternatives**
+    + Other zero-inflated models? Tweedie distribution?
+    + GAM (Be careful on data needed and interpretation)
+    + Quantile regression (preferentual habitats)
+    + Random forest (Be careful on your question)
+
+## Species distribution models
+
+- **Useful tool for biological knowledge and management**
+    + Delta approach appropriate for fish data
+    + Reliable when used with caution
+        + These are only correlations...
+- **This tutorial is a simple example**
+    + Further perspectives
+        + Add biotic covariates
+        + Multi-specific approach
+        + Anthropogenic pressures?
+  
+- **Alternative tools exists**
+    + The question determine the tool
+
+## Examples of application
+
+- Effect of habitat destruction on juvenile biomass (Fig. \\@ref(fig:figHSIConclusion))
+    + Case of the common sole in the Seine estuary
+    + Comparaison between 1850 and 2004
+        + Surface loss : 33%
+        + Biomass loss : 42%
+
+(ref:figHSIConclusionCap) Modelling effects of habitat destruction on common sole biomasses in the Seine estuary. Rochette, S., Rivot, E., Morin, J., Mackinson, S., Riou, P., Le Pape, O. (2010). Effect of nursery habitat degradation on flatfish population renewal. Application to Solea solea in the Eastern Channel (Western Europe). Journal of sea Research, 64 : 34-44.
+', sep = "")
+```
+```{r FR_HSIConclusion, eval=(lang == "FR"), results='asis'}
+cat('# Conclusion
+## Modélisation
+
+- **Importance de l\'exploration des données**
+    + Validation des données
+    + Loi de distribution
+    + Options pour les modèles
+- **Étude des modèles : une approche itérative**
+    + Choix de la loi de distribution
+    + Choix des combinaisons de covariables
+    + Vérification des hypothèses
+        + Analyse des résidus
+        + Critères de qualité d\'ajustement
+- **Gardez toujours vos objectifs en tête !**
+
+## Modèle Delta
+
+- **Utilité d\'un modèle Delta**
+    + Les données brutes ne peuvent être modélisées
+    + Sens biologique
+    + Présence & densités: pas forcément les mêmes covariables
+- **Utilisation d\'un modèle Delta**
+    + Prédictions utiles
+    + Les paramètres des sous-modèles n\'ont pas de sens dans le modèle couplé
+- **Alternatives**
+    + Autres modèles zero-inflated ? Distribution tweedie ?
+    + GAM (Attention aux données nécessaires et à l\'interprétation)
+    + Régression quantile (habitat préférentiels)
+    + Random forest (Attention à votre question)
+
+## Modèles de distribution d\'espèces
+
+- **Outils utiles pour les connaissances biologiques et pour la gestion**
+    + Modèle Delta approprié pour les données d\'espèces marines
+    + Fiable si utilisé avec précaution
+        + Ce ne sont que des corrélations...
+- **Cette formation est un exemple simple**
+    + D\'autres perspectives
+        + Ajouter une covariable biotique
+        + Approche multi-spécifique
+        + Pressions anthropiques ?
+  
+- **D\'autres outils existent**
+    + Votre question détermine l\'outil à utiliser
+
+## Exemples d\'applications
+
+- Effet de la destruction d\'habitat sur la biomasse de juvéniles (Fig. \\@ref(fig:figHSIConclusion))
+    + Cas de la sole commune dans l\'estuaire de Seine
+    + Comparaison entre 1850 et 2004
+        + Perte en surface : 33%
+        + Perte en biomasse : 42%
+
+(ref:figHSIConclusionCap) Modélisation des effets de la destruction d\'habitats sur la biomasse de sole en Seine. Rochette, S., Rivot, E., Morin, J., Mackinson, S., Riou, P., Le Pape, O. (2010). Effect of nursery habitat degradation on flatfish population renewal. Application to Solea solea in the Eastern Channel (Western Europe). Journal of sea Research, 64 : 34-44.
+', sep = "")
+```
+
+```{r figHSIConclusion, out.width='80%', fig.cap='(ref:figHSIConclusionCap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/SeineEstuaryLoss.png"))
+```
+
+
+```{r EN_HSIConclEx2, eval=(lang == "EN"), results='asis'}
+cat('
+- Estimation of biomass for management purpose (Fig. \\@ref(fig:figHSIConcl2))
+    + Case of kelps in Parc marion d\'Iroise
+    + Biomass estimations
+    + Validation with fishermen
+    + Proposition of a spatialised management
+
+(ref:figHSIConcl2Cap) Estimation of biomasses of Laminaria in the  parc marin d\'Iroise for resources management. Bajjouk T., Rochette S., Ehrhold A., Laurans M., Le Niliot P. (2015). Multi-approach mapping to help spatial planning and management of the kelp species L. digitata and L. hyporborea: Case study of the Molène archipelago, Brittany. Journal of Sea Research.
+', sep = "")
+```
+```{r FR_HSIConclEx2, eval=(lang == "FR"), results='asis'}
+cat('
+- Estimation de stock pour la gestion (Fig. \\@ref(fig:figHSIConcl2))
+    + Cas des laminaires du Parc marin d\'Iroise
+    + Estimation des biomasses
+    + Validation avec les pêcheurs
+    + Proposition de gestion spatialisée
+
+(ref:figHSIConcl2Cap) Estimation spatialisée des biomasses de laminaires dans le parc marin d\'Iroise pour la gestion de la ressource. Bajjouk T., Rochette S., Ehrhold A., Laurans M., Le Niliot P. (2015). Multi-approach mapping to help spatial planning and management of the kelp species L. digitata and L. hyporborea: Case study of the Molène archipelago, Brittany. Journal of Sea Research.
+', sep = "")
+```
+
+```{r figHSIConcl2, out.width='60%', fig.cap='(ref:figHSIConcl2Cap)', fig.align='center'}
+knitr::include_graphics(paste0(figPresWD, "/Prediction_Digitata.jpg"))
+```
