@@ -78,6 +78,7 @@ sep = "")
 # Load Coastlines shapefile
 Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84") 
 
+readr::write_rds(Coasts_Vilaine_wgs84, file.path(saveWD, "Dept_Contour_wgs84.rds"))
 # Load the data shapefile
 # dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
 Stations_covariates_wgs84 <- readr::read_rds(
@@ -86,8 +87,10 @@ Stations_covariates_wgs84 <- readr::read_rds(
 ```
 ```{r R_LoadData.S, purl=purl.S, eval=eval.S}
 # Get data --------------------------------------------------------------------
-# Load Coastlines shapefile
+# Load Coastlines shapefile (if you know spatial data)
 Coasts_Vilaine_wgs84 <- readOGR(...) 
+# Load rds if you do not know spatial data
+# Coasts_Vilaine_wgs84 <- read_rds(file.path(saveWD, "Dept_Contour_wgs84.rds"))
 
 # Load the data shapefile
 # Stations_covariates_wgs84 <- readOGR(...)

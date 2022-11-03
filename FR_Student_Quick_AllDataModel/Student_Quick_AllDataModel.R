@@ -253,52 +253,52 @@ AIC
 
 # Choosen model ?
 model <- ...
-## # Analyse ouputs of the chosen model ----
-## # Parameters estimates
-## summary(model)
-## 
-## # Analysis of variance
-## anova(model, test = "Chisq")
-## 
-## # % explained deviance
-## pc_dev_expl <- anova(model)[-1,2]*100 / anova(model)[1,4]
-## # % explained per factor
-## print(cbind(rownames(anova(model))[-1], round(pc_dev_expl, digit = 1)))
-## # % explained per df
-## print(cbind(rownames(anova(model))[-1],
-##             round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
-## 
-## # Model goodness of fit and residuals
-## par(mfcol = c(2, 2))
-## plot(model, which = 1:4)
-## 
-## # std Pearson residuals vs pred
-## par(mfrow = c(2, 3))
-## plot(dataset$Density + ClassicWay*1, rstandard(model, type = "pearson"),
-##      main = "Res. Pearson STD vs Obs.")
-## plot(fitted(model), rstandard(model, type = "pearson"),
-##      main = "Res. Pearson STD vs Pred.")
-## 
-## # std Deviance residuals	
-## qqnorm(rstandard(model, type = "deviance"),
-##        ylim = c(-3, 3),
-##        main = "Normal Q-Q plot sur Res. deviance std.")
-## qqline(rstandard(model, type = "deviance"), col = "red")
-## 
-## # Cook's distance
-## plot(cooks.distance(model), type = "h", main = "Cook's distance")
-## 
-## # Predictions vs data
-## pred <- model$fitted
-## # obs <- dataset$Density+1
-## obs <- log(dataset$Density + ClassicWay*1)
-## plot(obs, pred, xlim = c(0, 10), ylim = c(0, 10), main = "Pred vs Obs")
-## abline(b = 1, a = 0, col = "red")
-## 
-## # Homogeneity of the variance of residuals per class of bathymetry
-## dataset$Resid <- model$resid
-## boxplot(dataset$Resid ~ dataset$Bathy_c, main = "Resid vs Bathy_c")
-## 
+# Analyse ouputs of the chosen model ----
+# Parameters estimates
+summary(model)
+
+# Analysis of variance
+anova(model, test = "Chisq") 
+
+# % explained deviance
+pc_dev_expl <- anova(model)[-1,2]*100 / anova(model)[1,4]
+# % explained per factor
+print(cbind(rownames(anova(model))[-1], round(pc_dev_expl, digit = 1)))
+# % explained per df
+print(cbind(rownames(anova(model))[-1],
+            round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+
+# Model goodness of fit and residuals
+par(mfcol = c(2, 2))
+plot(model, which = 1:4)
+
+# std Pearson residuals vs pred
+par(mfrow = c(2, 3))
+plot(dataset$Density + ClassicWay*1, rstandard(model, type = "pearson"),
+     main = "Res. Pearson STD vs Obs.")
+plot(fitted(model), rstandard(model, type = "pearson"), 
+     main = "Res. Pearson STD vs Pred.")
+
+# std Deviance residuals	
+qqnorm(rstandard(model, type = "deviance"),
+       ylim = c(-3, 3),
+       main = "Normal Q-Q plot sur Res. deviance std.")
+qqline(rstandard(model, type = "deviance"), col = "red")
+
+# Cook's distance
+plot(cooks.distance(model), type = "h", main = "Cook's distance")
+
+# Predictions vs data
+pred <- model$fitted
+# obs <- dataset$Density+1
+obs <- log(dataset$Density + ClassicWay*1)
+plot(obs, pred, xlim = c(0, 10), ylim = c(0, 10), main = "Pred vs Obs")
+abline(b = 1, a = 0, col = "red")
+
+# Homogeneity of the variance of residuals per class of bathymetry
+dataset$Resid <- model$resid
+boxplot(dataset$Resid ~ dataset$Bathy_c, main = "Resid vs Bathy_c")
+
 # Predictions ----
 # Dowload the file with factors for predictions
 predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),

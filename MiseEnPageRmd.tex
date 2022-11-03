@@ -1,0 +1,105 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+%\usepackage{amssymb,amsfonts,textcomp}
+\usepackage{color}
+\usepackage{array}
+\usepackage{hhline}
+%\usepackage[linktocpage=true]{hyperref} % to have only number clickable in toc
+\hypersetup{linktocpage=true, colorlinks=true, linkcolor=[RGB]{241,85,34}, citecolor=[RGB]{241,85,34}, filecolor=[RGB]{241,85,34}, urlcolor=[RGB]{241,85,34}}
+%\usepackage[pdftex]{graphicx}
+\usepackage{tikz}
+%\usepackage{float} % To force figure to be placed where I want with H
+% do not use float as it changes space between figures and their caption.
+% Better use [!h] option for figures
+\usepackage[normalem]{ulem} % to underline text on multiple lines
+
+\renewcommand{\emph}[1]{\textit{#1}}
+
+\usepackage{lmodern} % For higher definition fonts
+\usepackage[font = footnotesize, labelfont = bf, margin = 1cm]{caption} %name=Fig.
+
+% Text styles
+\newcommand\textstyleInternetlink[1]{\textcolor[RGB]{21,183,214}{#1}}
+\newcommand\Greytext[1]{\textcolor[RGB]{75,75,75}{#1}}
+\newcommand\LightGrey[1]{\textcolor[RGB]{173,169,174}{#1}}
+\newcommand\OtherGrey[1]{\textcolor[RGB]{200,200,200}{#1}}
+
+
+% List styles
+%\newcommand\liststyleWWviiiNumii{%
+%\renewcommand\labelitemi{{\textbullet}}
+%\renewcommand\labelitemii{{\textbullet}}
+%\renewcommand\labelitemiii{{\textbullet}}
+%\renewcommand\labelitemiv{{\textbullet}}
+%}
+
+\AtBeginDocument{
+\def\labelitemi{$\bullet$}%
+\def\labelitemii{$\circ$}%
+\def\labelitemiii{$-$}%
+\def\labelitemiv{$-$}%
+}
+
+% FIGURES
+% \graphicspath{{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/img_QGIS/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/figureR/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/Figures_Pres/}{/mnt/Data/autoentrepreneur/Presentation_Produits/SRochettePresentation-img/}}
+
+%\setlength{\abovecaptionskip}{5pt}
+%\setlength{\belowcaptionskip}{10pt}
+
+
+% DIMENSIONS - MARGINS
+% \usepackage[top=2.4cm, bottom=2.1cm, outer=2cm, inner=4cm, headheight=40pt]{geometry} %heightrounded
+%\setlength\hoffset{0cm}
+%\setlength\voffset{0cm}
+\setlength\topmargin{-2cm}
+%\setlength\headheight{2cm}
+\setlength\headsep{0.50cm}
+%\setlength\textheight{25.7cm}
+\setlength\footskip{1.1cm}
+\setlength{\parindent}{0em}
+%\setlength{\parskip}{0em}
+\setlength\belowcaptionskip{5pt}
+\setlength\abovecaptionskip{8pt}
+%\let\oldfigure\figure
+%\let\oldtable\table
+%\def\figure{\setlength\abovecaptionskip{5pt}\oldfigure}
+%\def\table{\setlength\belowcaptionskip{1cm}\oldtable}
+%\usepackage{caption} %[font = small]
+%\setlength{\abovecaptionskip}{10pt plus 5pt minus 5pt}
+%\captionsetup[table]{skip = 10pt}
+%\captionsetup[figure]{skip = 10pt}
+%\setlength\longindentation 0.60\textwidth
+
+% \usepackage{lastpage} % to calculate number of pages to put in footer
+\usepackage{pageslts}
+
+% ----------
+% BACKGROUND
+% ----------
+\usepackage{eso-pic}
+\newcommand\BackgroundPic{%
+\put(0,0){%
+\parbox[b][\paperheight]{\paperwidth}{%
+\vfill
+\centering
+  \includegraphics[width=\paperwidth,height=\paperheight]{Background_light_topdown_ThinkR.png}%
+\vfill
+}}}
+\newcommand\BackgroundPicTitle{%
+\put(0,0){%
+\parbox[b][\paperheight]{\paperwidth}{%
+\vfill
+\centering
+  \includegraphics[width=\paperwidth,height=\paperheight]{Background_Title_light_ThinkR.png}%
+\vfill
+}}}
+
+%...and this immediately after \begin{document}:
+%\AddToShipoutPicture*{\BackgroundPic}
+%The * will make sure that the background picture will only be put on one page.
+%If you wish to use the picture on multiple pages, skip the *:
+%\AddToShipoutPicture{\BackgroundPic}
+%Then use this command to stop using the background picture:
+%\ClearShipoutPicture
+

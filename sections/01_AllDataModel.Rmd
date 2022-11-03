@@ -507,7 +507,7 @@ model <- glm(log(Density) ~ Bathy_c + Sedim, family = gaussian, data = dataset)
 }
 
 ```
-```{r RFigGLMResults, purl=TRUE, fig.keep="last", eval=(Version == "Teacher"), fig.cap='(ref:RFigGLMResultsCap)', results='hide', fig.align='center'}
+```{r RFigGLMResults, purl=TRUE, fig.keep="last", eval=TRUE, fig.cap='(ref:RFigGLMResultsCap)', results='hide', fig.align='center'}
 # Analyse ouputs of the chosen model ----
 # Parameters estimates
 summary(model)

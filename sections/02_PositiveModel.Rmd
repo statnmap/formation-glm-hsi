@@ -1,3 +1,8 @@
+```{r FigPositive}
+# Folder where to save outputs from R
+figDeltaWD <- paste0(wd, "/03_Figures/02_DeltaModel")
+```
+
 ```{r EN_PresentationPositive, eval=(lang == "EN"), results='asis'}
 cat('
 ## Positive sub-model
@@ -428,6 +433,7 @@ In our case, the cross-validation is a little tricky because we have repetition 
 - ', styleFmt("Is the model selected with AIC still the best model when considering the RMSE ?", "exo"),'
 ', sep = "")
 ```
+
 ```{r FR_CrossValidationPositive, eval=(lang == "FR"), results='asis'}
 cat('
 ### Validation du modèle
@@ -450,7 +456,7 @@ Dans notre cas, la validation croisée est un peu délicate car nous avons des r
 ', sep = "")
 ```
 
-```{r figCrossValidationPositive, out.width='50%', fig.cap='(ref:figCrossValidationPositiveCap)', fig.align='center'}
+```{r figCrossValidationPositive, out.width='50%', eval=(Version == "Teacher"), fig.cap='(ref:figCrossValidationPositiveCap)', fig.align='center'}
 knitr::include_graphics(paste0(figDeltaWD, "/Cross_Validation.png"))
 ```
 

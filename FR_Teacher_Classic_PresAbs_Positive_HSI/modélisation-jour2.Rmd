@@ -1,0 +1,248 @@
+---
+title: "Modèle Delta"
+author: "Sébastien Rochette, ThinkR"
+output:
+  html_document:
+    code_folding: "hide"
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## packages
+
+J'ouvre un nouveau chunk avec : Ctrl + Alt + I  
+Je charge la liste des packages nécessaires à la formation.
+
+```{r, message=FALSE}
+# Load libraries ---------------------------------------------------------------
+library(sp)
+library(rgdal)
+library(raster)
+library(maps)
+library(mapdata)
+library(dplyr)
+library(here)
+# Other libraries ----
+library(lattice) #to improve graphics
+library(MASS)
+library(ggplot2)
+# devtools::install_github('bhaskarvk/widgetframe')
+library(leaflet)
+library(ggmap)
+library(pROC)
+```
+
+## Dossier de travail
+
+```{r}
+# Define working directories ---------------------------------------------------
+# WD <- "/mnt/Data/Formation_TD-GLM_Cours_Agro/TD_Vilaine_SIG-et-GLM_2017_01_3days"
+WD <- here()
+# Folder of original files
+origWD <- here("01_Original_data")
+# Folder for outputs
+saveWD <- here("02_Outputs")
+# Folder where to save outputs from R
+figWD <- here("03_Figures")
+# Folder where complementary functions are stored
+funcWD <- here("04_Functions")
+# Copy maintained complementary functions from local directory
+# if (file.exists("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R")) {
+#   tmp <- file.copy("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R",
+#                    paste0(funcWD, "/Map.output.fun.R"), overwrite = TRUE)
+# }
+# Manual operations
+Manuel <- FALSE
+
+
+```
+
+## Scripts supplémentaires
+
+```{r}
+# Download other personnal graphic functions
+source(paste0(funcWD, "/function.Gamma.Hist.R"))
+source(paste0(funcWD, "/function.chisq.gof.R"), encoding = "Latin1")
+```
+
+## Les données
+
+### Lecture
+Les données sont des données spatialisées.
+
+```{r}
+# Get data --------------------------------------------------------------------
+# Load Coastlines shapefile
+# Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84") 
+Coasts_Vilaine_wgs84 <- readr::read_rds(file.path(saveWD, "Dept_Contour_wgs84.rds"))
+# Coasts_Vilaine_wgs84 <- readr::write_rds(Coasts_Vilaine_wgs84, file.path(saveWD, "Dept_Contour_wgs84.rds"))
+# Load the data shapefile
+# dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+# Plot data
+plot(Stations_covariates_wgs84)
+plot(Coasts_Vilaine_wgs84, usePolypath = F, lwd = 2, col = "grey", add = TRUE)
+box()
+```
+
+### Préparation
+
+```{r}
+# Transform to non-spatial dataset
+dataset.tmp <- as.tbl(Stations_covariates_wgs84@data)
+dataset.tmp
+dim(dataset.tmp)
+summary(dataset.tmp)
+names(dataset.tmp)
+
+# Clean dataset
+names(dataset.tmp) <- gsub("_pt", "", names(dataset.tmp))
+
+# Add a new covariate: bathymetry as class factor covariate
+# c("1depth < 5 m", "2depth 5 - 10 m", "3depth 10 - 20 m", "4depth 20 - 50 m")
+dataset.orig <- dataset.tmp %>%
+  mutate(Bathy_c = 
+           cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+               labels = c("1depth < 5m", "2depth 5-10m",
+                          "3depth 10-20m", "4depth 20-50m"),
+               include.lowest = TRUE)) %>%
+  # dplyr::select(-matches("coords"), -optional, -id) %>%
+  dplyr::select(lat:Density, Sedim, Bathy, Bathy_c) %>%
+  mutate(Year = as.factor(as.character(Year)))
+
+# Extract dataset with only positive values
+dataset <- dataset.orig %>%
+  filter(Density > 0)
+
+```
+
+
+### Exploration
+
+*Promis, j'ai bien exploré !*
+
+## Modèle de données positives
+
+```{r}
+poly(dataset$Bathy, 3)
+# _Additionnal analysis of residuals of the chosen model ----
+model <- glm(log(Density) ~ poly(Bathy, 3) + Sedim,
+             family = gaussian, data = dataset)
+summary(model)
+AIC(model) + 2 * sum(log(dataset$Density))
+```
+
+### Correction de Laurent
+
+```{r}
+dist_gauss <- rnorm(5000, 0, 1)
+hist(dist_gauss)
+mean(dist_gauss)
+
+exp_gauss <- exp(dist_gauss)
+hist(exp_gauss)
+mean(exp_gauss)
+
+exp(mean(dist_gauss))
+exp(mean(dist_gauss) + 0.5 * var(dist_gauss))
+
+pred_link <- 3 + dist_gauss
+hist(pred_link)
+pred <- exp(pred_link)
+hist(pred)
+mean(pred)
+exp(3 + 0.5 * var(dist_gauss))
+```
+
+## Modèle de données présence-absence
+
+Exécuter tous les chunk précédents : Ctrl + Alt + P
+```{r}
+# Extract dataset with only positive values
+dataset <- dataset.orig %>%
+  mutate(Presence = as.numeric(Density > 0))
+```
+
+### Exploration
+```{r}
+
+# _Covariates potential effect ----
+# Histograms (ggplot2)
+g <- ggplot(dataset) +
+  geom_histogram(aes(Presence),
+                 bins = 30, fill = "cyan", col = "grey20")
+plot(g)
+
+g + facet_wrap(~Bathy_c)
+g + facet_wrap(~Sedim)
+g_hist <- g + facet_grid(Sedim ~ Bathy_c)
+
+
+# Mean by class of factor
+ggplot(dataset, aes(Year, Presence)) + 
+  stat_summary(fun.y = mean, geom = "bar", fill = "grey70")
+
+ggplot(dataset, aes(Bathy_c, Presence)) + 
+  stat_summary(fun.y = mean, geom = "bar", fill = "grey70") +
+  facet_wrap(~Sedim)
+
+```
+
+### Ajustement du modèle
+```{r}
+Dens01.glm <- glm(Presence ~ Bathy + Sedim, family = binomial, data = dataset)
+
+model <- Dens01.glm
+AIC(model)
+# _Outputs ----
+# Anova
+summary(model)
+anova(model, test = "Chisq")
+
+# % explained deviance
+pc_dev_expl <- anova(model)[-1, 2] * 100 / anova(model)[1, 4]
+# % explained per factor
+print(cbind(rownames(anova(model))[-1], round(pc_dev_expl , digit = 1)))
+# % explained per df
+print(cbind(rownames(anova(model))[-1], 
+            round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+
+# Residuals
+par(mfrow = c(2, 2))
+plot(model, which = c(1, 2, 3, 4))
+```
+
+### Sélection sur AUC
+
+```{r}
+# _Area under the curve ----
+calc.roc <- roc(dataset$Presence, fitted(model))
+plot(calc.roc, auc.polygon = TRUE)
+auc(calc.roc)
+
+# _Validation of the model on Years 2000-2003 ----
+calib.dataset <- dataset[-which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+valid.dataset <- dataset[which(
+  dataset$Year %in% c("2000", "2001", "2002", "2003")), ]
+Dens01.valid.glm <- glm(Presence ~ Bathy + Sedim,
+                        # family = binomial, 
+                        family = binomial(link = "cloglog"),
+                        data = calib.dataset)
+valid.fit <- predict(Dens01.valid.glm,
+                     newdata = valid.dataset, type = "response")
+
+# Area under the curve on validation
+valid.roc <- roc(valid.dataset$Presence, valid.fit)
+plot(valid.roc, auc.polygon = TRUE)
+auc(valid.roc)
+
+```
+
+

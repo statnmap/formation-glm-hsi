@@ -1,0 +1,279 @@
+---
+title: "Untitled"
+output:
+  html_document:
+    code_folding: "hide"
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## packages
+
+J'ouvre un nouveau chunk avec : Ctrl + Alt + I  
+Je charge la liste des packages nécessaires à la formation.
+
+```{r}
+# Load libraries ---------------------------------------------------------------
+library(sp)
+library(rgdal)
+library(raster)
+library(maps)
+library(mapdata)
+library(dplyr)
+library(here)
+# Other libraries ----
+library(lattice) #to improve graphics
+library(MASS)
+library(ggplot2)
+# devtools::install_github('bhaskarvk/widgetframe')
+library(leaflet)
+library(ggmap)
+
+```
+
+## Dossier de travail
+
+```{r}
+# Define working directories ---------------------------------------------------
+# WD <- "/mnt/Data/Formation_TD-GLM_Cours_Agro/TD_Vilaine_SIG-et-GLM_2017_01_3days"
+WD <- here()
+# Folder of original files
+origWD <- here("01_Original_data")
+# Folder for outputs
+saveWD <- here("02_Outputs")
+# Folder where to save outputs from R
+figWD <- here("03_Figures")
+# Folder where complementary functions are stored
+funcWD <- here("04_Functions")
+# Copy maintained complementary functions from local directory
+# if (file.exists("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R")) {
+#   tmp <- file.copy("~/Rshiny/Map_creation_git/Rsources/Map.output.fun.R",
+#                    paste0(funcWD, "/Map.output.fun.R"), overwrite = TRUE)
+# }
+# Manual operations
+Manuel <- FALSE
+
+
+```
+
+## Scripts supplémentaires
+
+```{r}
+# Download other personnal graphic functions
+source(paste0(funcWD, "/function.Gamma.Hist.R"))
+source(paste0(funcWD, "/function.chisq.gof.R"), encoding = "Latin1")
+```
+
+## Les données
+
+### Lecture
+Les données sont des données spatialisées.
+
+```{r}
+# Get data --------------------------------------------------------------------
+# Load Coastlines shapefile
+# Coasts_Vilaine_wgs84 <- readOGR(dsn = saveWD, layer = "Dept_Contour_wgs84") 
+Coasts_Vilaine_wgs84 <- readr::read_rds(file.path(saveWD, "Dept_Contour_wgs84.rds"))
+# Coasts_Vilaine_wgs84 <- readr::write_rds(Coasts_Vilaine_wgs84, file.path(saveWD, "Dept_Contour_wgs84.rds"))
+# Load the data shapefile
+# dataset <- readOGR(dsn = saveWD, layer = "Stations_covariates_wgs84")
+Stations_covariates_wgs84 <- readr::read_rds(
+  path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
+
+# Plot data
+plot(Stations_covariates_wgs84)
+plot(Coasts_Vilaine_wgs84, usePolypath = F, lwd = 2, col = "grey", add = TRUE)
+box()
+```
+
+### Préparation
+
+```{r}
+# Transform to non-spatial dataset
+dataset.tmp <- as.tbl(Stations_covariates_wgs84@data)
+dataset.tmp
+dim(dataset.tmp)
+summary(dataset.tmp)
+names(dataset.tmp)
+
+# Clean dataset
+names(dataset.tmp) <- gsub("_pt", "", names(dataset.tmp))
+
+# Add a new covariate: bathymetry as class factor covariate
+# c("1depth < 5 m", "2depth 5 - 10 m", "3depth 10 - 20 m", "4depth 20 - 50 m")
+dataset <- dataset.tmp %>%
+  mutate(Bathy_c = 
+           cut(-Bathy, breaks = c(min(-Bathy), 5, 10, 20, max(-Bathy, 50)),
+               labels = c("1depth < 5m", "2depth 5-10m",
+                          "3depth 10-20m", "4depth 20-50m"),
+               include.lowest = TRUE)) %>%
+  # dplyr::select(-matches("coords"), -optional, -id) %>%
+  dplyr::select(lat:Density, Sedim, Bathy, Bathy_c) %>%
+  mutate(Year = as.factor(as.character(Year)))
+
+rm(dataset.tmp)
+```
+
+## Exploration des distributions
+
+```{r}
+ggplot(dataset) +
+  geom_histogram(aes(log(Density + 1)),
+                 bins = 30, fill = "orange", col = "grey40") +
+  facet_grid(Bathy_c ~ Sedim, scales = "free_y")
+```
+
+### Comparaison des distributions 
+
+```{r}
+# _Distribution type of the data ----
+# Tests of normality
+par(mfrow = c(1,2))
+qqnorm(dataset$Density) ; qqline(dataset$Density, col = "red")
+qqnorm(log(dataset$Density + 1)) ; qqline(log(dataset$Density + 1), col = "red")
+
+ks.test(rnorm(1000, 0, 1), pnorm)
+ks.test(dataset$Density, pnorm)
+ks.test(log(dataset$Density + 1), pnorm)
+
+chisq.gof(rnorm(1000, 0, 1), distribution = "normal")
+chisq.gof(log(dataset$Density + 1), distribution = "normal")
+# Comments : these tests are to be used with caution (need lot of data)
+
+# Gamma ?
+Gamma.Hist(dataset$Density + 1)
+
+shape <- mean(dataset$Density) * mean(dataset$Density) / var(dataset$Density)
+chisq.gof(dataset$Density, distribution = "gamma", shape = shape)
+
+```
+
+### Distribution selon les covariables
+
+```{r}
+# _Distribution with covariates ----
+# qqplot
+x11()
+par(mfrow = c(2, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density, dataset$Bathy_c,
+       function(x) {qqnorm(x); qqline(x, col = "red")})
+tapply(log(dataset$Density + 1), dataset$Bathy_c, 
+       function(x) {qqnorm(x); qqline(x, col = "red")})
+
+# Statistical tests
+tapply(log(dataset$Density + 1), dataset$Bathy_c,
+       function(x) {ks.test(x, y = pnorm)})
+tapply(log(dataset$Density + 1), dataset$Bathy_c,
+       function(x) {chisq.gof(x, distribution = "normal")})
+
+# Histograms with Gamma distribution
+par(mfcol = c(1, length(levels(as.factor(dataset$Bathy_c)))))
+tapply(dataset$Density + 1, dataset$Bathy_c, Gamma.Hist)
+
+```
+
+### Conclusion intermédiaire
+
+- Le modèle ne sera sûrement pas gaussien, peut-être Gamma ou Log-normal
+- On a quand même un problème avec les absences
+
+## Exploration des interactions
+
+```{r}
+# log density
+par(mfrow = c(2, 2))
+interaction.plot(x.factor = dataset$Bathy_c,  trace.factor = dataset$Year,
+                 response = log(dataset$Density + 1))
+interaction.plot(x.factor = dataset$Year,  trace.factor = dataset$Bathy_c,
+                 response = log(dataset$Density + 1))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Year,
+                 response = log(dataset$Density + 1),  col = rainbow(15))
+interaction.plot(x.factor = dataset$Sedim, trace.factor = dataset$Bathy_c,
+                 response = log(dataset$Density + 1) )
+
+```
+
+## Ajustement et sélection de modèles
+
+ REMEMBER ====------------------------------------------------------------
+ Define what you are looking for, which question you try to answer!
+
+ MODEL TESTING
+ Test different form of models regarding combination of covariates and distribution form of the residuals;
+ Compare models using statistical tools (AIC, anova, …), cross-validation tools but also your knowledge of the dataset and the answers you are looking for;
+ Analyse the residuals. Analyse their distribution and if your hypotheses are verified.
+
+ REMEMBER
+ Only when hypotheses on distribution law are verified, physical covariates and interactions selected may start to be interpreted...
+
+ ==== WARNING ====
+ Scripts below are just giving some examples, but are not playing best solutions !
+ Try other solutions, build your own ! 
+
+
+```{r}
+# Try simple Linear models ----
+Dens1.lm <- lm(Density ~ Bathy + Sedim, data = dataset)
+summary.glm <- summary(Dens1.lm)
+summary.glm
+
+# Diagnostic of the residuals of Dens1.lm
+par(mfcol = c(2,2))
+plot(Dens1.lm, which = 1:3)
+hist(resid(Dens1.lm), main = "Hist. of residuals")
+
+# Analysis of variance
+aov1 <- anova(Dens1.lm, test = "Chisq") 
+aov1
+
+AIC(Dens1.lm)
+```
+
+
+### Sélection sur la base de l'AIC
+```{r, results="hide"}
+# Using step AIC
+null.m <- glm((Density) ~ 1, data = dataset, family = "Gamma")
+Dens3.glm <- stepAIC(null.m, 
+                     (Density) ~ (Bathy_c + Sedim + Year)^2,
+                     data = dataset, direction = "both")
+```
+
+Best model
+```{r}
+model <- glm(log(Density+1) ~ Bathy_c + Sedim, family = gaussian, data = dataset)
+AIC(model) + 2 * sum(log(dataset$Density + 1))
+
+plot(model)
+```
+
+### Prédictions
+```{r}
+# Predictions ----
+# Dowload the file with factors for predictions
+predictions <- readr::read_delim(paste0(origWD, "/predictions.csv"),
+                                 delim = ";")
+
+# Compute predictions (in the scale of the response)
+pred.Density <- cbind(predictions, predict.glm(model, predictions, type = "r", se = T)) %>%
+  group_by(Sedim, Bathy_c) %>%
+  summarise(mean.fit = mean(fit),
+            mean.se = mean(se.fit)) %>%
+  ungroup()
+
+# library(emojifont)
+ggplot(pred.Density, aes(x = Bathy_c, y = mean.fit, colour = Sedim)) +
+  geom_point() +
+  #geom_text(family = 'EmojiOne', size = 8, label = emoji('fish'),
+  #          show.legend = FALSE) + 
+  geom_errorbar(aes(ymin = mean.fit - mean.se, ymax = mean.fit + mean.se), 
+                width = 0.2) +
+  theme(legend.position = "bottom")
+
+
+```
+

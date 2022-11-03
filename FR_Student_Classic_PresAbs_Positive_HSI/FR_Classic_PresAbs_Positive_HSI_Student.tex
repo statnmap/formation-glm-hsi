@@ -1,0 +1,1062 @@
+\documentclass[french,a4paper]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[top=2.4cm, bottom=2.1cm, outer=2cm, inner=4cm, headheight=40pt]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Formation aux GLM et aux modèles de distribution d'espèces},
+            pdfauthor={Sébastien Rochette},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=french]{babel}
+\else
+  \usepackage{polyglossia}
+  \setmainlanguage[]{french}
+\fi
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Formation aux GLM et aux modèles de distribution d'espèces}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Sébastien Rochette}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{27 mai, 2019}
+
+% GIS and R Course
+% author : Sébastien Rochette
+% contact : sebastienrochettefr@gmail.com
+% website : http://statnmap.com
+
+% \documentclass[a4paper]{article}
+% Lang EN = 1, FR = 2
+% \def\Lang{\Sexpr{Lang}} % 
+% -- Command to find which language is loaded in babel -- %
+% http://tex.stackexchange.com/questions/287667/ifpackagewith-doesnt-behave-as-i-expected-with-global-options
+\usepackage{xparse}
+\ExplSyntaxOn
+\NewDocumentCommand{\packageoptionsTF}{mmmm}
+ {
+  \stanton_package_options:nnTF { #1 } { #2 } { #3 } { #4 }
+ }
+
+\cs_new_protected:Nn \stanton_package_options:nnTF
+ {
+  \clist_map_inline:nn { #2 }
+   {
+    \clist_if_in:cnTF { opt@#1.sty } { ##1 }
+     { #3 } % it's a local option
+     {
+      \clist_if_in:cnTF { @classoptionslist } { ##1 }
+       { #3 } % it's a global option
+       { #4 }
+     }
+   }
+}
+\ExplSyntaxOff
+
+% -- Define a variable depending on language -- %
+\newcommand{\Lang}{2}
+
+\makeatletter
+\@ifpackageloaded{babel}{
+  \packageoptionsTF{babel}{english}{%
+    \renewcommand{\Lang}{1}% english
+  }{%
+    \renewcommand{\Lang}{2}% french
+  }
+}{
+\ifnum\Lang = 1
+  \usepackage[english]{babel}
+\fi
+\ifnum\Lang = 2
+  \usepackage[french]{babel}
+\fi
+}
+\makeatother
+
+% -- Define specific lateX options depending on language -- %
+\ifnum\Lang = 1
+  % \usepackage[english]{babel}
+  \usepackage{enumitem}
+  \setlist{itemsep = 0pt}
+  \setlist{topsep = 0pt}
+\fi
+\ifnum\Lang = 2
+  % \usepackage[french]{babel}
+\fi
+
+% --
+\input{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/templates/latex/MiseEnPageRmd.tex}
+\input{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/templates/latex/MiseEnFormeTitreFormationRmd.tex}
+% \input{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/templates/latex/MiseEnFormeTitreFormationRmd_NoSectionBreak.tex}
+
+\ifnum\Lang = 1
+\input{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/templates/latex/header_EN_Seb.tex}
+\fi
+\ifnum\Lang = 2
+\input{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/templates/latex/header_FR_Seb.tex}
+\fi
+
+% -- Graphic path -- %
+% \graphicspath{{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/img_QGIS/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/figureR/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/Figures_Pres/}{/mnt/Data/autoentrepreneur/Presentation_Produits/SRochettePresentation-img/}}
+\graphicspath{{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/}}
+
+% \title{GIS and R Course}
+% \author{Sébastien Rochette}
+
+\setcounter{section}{0} % Value for first section
+
+
+\hypersetup{pdfauthor=Sébastien Rochette, pdftitle=Formation ThinkR, pdfsubject=Formation à R, pdfkeywords=R, pdfcreator=pdflatex}
+
+%----------------------------------------------------------------------------------------
+% TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\newcommand*{\titleGM}{\begingroup % Create the command for including the title page in the document
+\hbox{ % Horizontal box
+%\hspace*{0.2\textwidth} % Whitespace to the left of the title page
+%\hspace*{0.2\textwidth}
+\OtherGrey{\rule{1pt}{\textheight}} % Vertical line
+\hspace*{0.05\textwidth} % Whitespace between the vertical line and title page text
+\parbox[b]{0.75\textwidth}{ % Paragraph box which restricts text to less than the width of the page
+
+{\noindent\Huge\bfseries\textstyleInternetlink{ Formation à R}}\\[2\baselineskip] % Title
+{\large{Modélisation avec les GLM}}\\[4\baselineskip] % Tagline or further description
+{\Large \textsc{Sébastien Rochette, ThinkR}} % Author name
+
+\vspace{0.5\textheight} % Whitespace between the title block and the publisher
+{\noindent \href{url:https://thinkr.fr}{ThinkR}}\\[\baselineskip] % Publisher and logo
+}}
+\endgroup}
+
+\AtBeginDocument{\let\maketitle\relax}
+
+\begin{document}
+\maketitle
+
+\pagenumbering{arabic}
+
+%\bigskip
+%\medskip
+
+%\begin{center}
+%\href{url:http://statnmap.com}{\textstyleInternetlink{\huge{Modelling distribution of species in the Bay of Biscay}}}\\
+%\large{Sébastien Rochette}\\
+%\end{center}
+\setcounter{page}{0}
+\pagestyle{empty} % Removes page numbers
+\AddToShipoutPicture{\BackgroundPicTitle}
+
+\titleGM
+
+\pagebreak
+\pagestyle{fancy}
+% \clearpage\setcounter{page}{1}\pagestyle{Standard}
+\AddToShipoutPicture{\BackgroundPic}
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\hypertarget{preface}{%
+\section{Préface}\label{preface}}
+
+\emph{La version d'origine de cette formation a été créée par Olivier Le Pape et Étienne Rivot à Agrocampus Ouest (Rennes, France). Depuis mon doctorat dans leur équipe, je mets à jour constamment cette formation au gré de ma recherche et de l'évolution du logiciel R.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+  \CommentTok{# Generated with R and rmarkdown: Roadmap version - Students}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{presentation-de-letude}{%
+\section{Présentation de l'étude}\label{presentation-de-letude}}
+
+\textbf{\advert{Le contexte et les objectifs de votre étude définissent le type de modélisation que vous allez mettre en place sur votre jeu de données.}\\
+Ici, nous utilisons les modèles linéaires généralisés pour produire une carte de distribution moyenne de la nourricerie de soles communes de la baie de Vilaine}.
+
+\hypertarget{contexte}{%
+\subsection{Contexte}\label{contexte}}
+
+\begin{itemize}
+\tightlist
+\item
+  Les zones côtières et les estuaires sont des habitats halieutiques essentiels
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Zones à forte production
+  \item
+    Nourriceries
+  \item
+    Zones restreintes avec de fortes densités (Fig. \ref{fig:figPlaiceBox})
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.5\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/PlaiceBox_crop} 
+
+}
+
+\caption{Plaice box (Rijnsdorp \emph{et al.})}\label{fig:figPlaiceBox}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  Pression anthropique élevée
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Perte de surface disponibles (Fig. \ref{fig:figHighPressure}a)
+  \item
+    Qualité des habitats alterée (Fig. \ref{fig:figHighPressure}b)
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{itemize}
+\tightlist
+\item
+  Impact sur le renouvellement des populations
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Jeune stades = Gouleau d'étranglement
+  \item
+    La taille et la qualité des nourriceries côtières influent sur la production de juvéniles
+  \end{itemize}
+\end{itemize}
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/HighPressure} 
+
+}
+
+\caption{(a) L'estuaire de la Seine. (b) Niveau de contamination chimique le long des côtes françaises (Ifremer, 2011)}\label{fig:figHighPressure}
+\end{figure}
+
+\hypertarget{objectifs}{%
+\subsection{Objectifs}\label{objectifs}}
+
+Déterminer les facteurs ayant une influence sur la distribution des poissons plats (\emph{Solea solea}) en Baie de Vilaine et cartographier la distribution moyenne des densités.
+
+\begin{itemize}
+\tightlist
+\item
+  Cartographier les habitats potentiels nécessite:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Connaissance des habitats de juvéniles
+  \item
+    Campagnes d'échantillonnage dans la zone d'étude
+  \item
+    Connaissance des covariables environnementales ayant potentiellement de l'influence
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Cartes exhaustives des covariables environnementales
+    \end{itemize}
+  \end{itemize}
+\item
+  Une approche statistique en deux étapes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Modèle statistique reliant les densités aux covariables
+  \item
+    Prédire les habitats potentiels
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{donnees}{%
+\subsection{Données}\label{donnees}}
+
+Campagne standardisée de chalut à perche dans la baie de Vilaine (Fig. \ref{fig:figVilaineCampaign})
+
+\begin{itemize}
+\tightlist
+\item
+  1984 -- 2010
+\item
+  En autumne
+\item
+  Juvéniles de l'année (Âge 0)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Nb individus / 1000m\textsuperscript{2}
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Vilaine_Campaign} 
+
+}
+
+\caption{(a) L'estuaire de la Vilaine. (b) Chalut à perche. (c) Situation des stations d'échantillonnage.}\label{fig:figVilaineCampaign}
+\end{figure}
+
+\hypertarget{covariables}{%
+\subsection{Covariables}\label{covariables}}
+
+\begin{itemize}
+\tightlist
+\item
+  Bathymétrie (Fig. \ref{fig:figCovariates}a)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    MNT à 1000m de résolution
+  \item
+    Projection Mercator
+  \end{itemize}
+\item
+  Structure sédimentainre (Fig. \ref{fig:figCovariates}b)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Fichier shape de polygones
+  \item
+    Coordonnées géographiques
+  \end{itemize}
+\item
+  Zones biologiques (Fig. \ref{fig:figCovariates}c)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Combinaison bathymétrie, sédiment, habitat
+  \item
+    Fichier shape de polygones
+  \item
+    Coordonnées géographiques
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Day2-02Vilaine-Covariates_abc} 
+
+}
+
+\caption{Covariables en baie de Vilaine. (a) Structure sédimentaire, (b) Bathymétrie et (c) Zones biologiques.}\label{fig:figCovariates}
+\end{figure}
+
+\hypertarget{ajuster-un-modele-de-distribution-despeces}{%
+\subsection{Ajuster un modèle de distribution d'espèces}\label{ajuster-un-modele-de-distribution-despeces}}
+
+\begin{itemize}
+\tightlist
+\item
+  Croiser les données avec les cartes de covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Utiliser un modèle linéaire
+  \end{itemize}
+\item
+  Utiliser les cartes des covariables pour la prédiction (Fig. \ref{fig:figProcedure})
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Une prédiction pour chaque cellule d'un raster
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.7\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Schema_Modele} 
+
+}
+
+\caption{Procédure pour un modèle de distribution d'espèce}\label{fig:figProcedure}
+\end{figure}
+
+\hypertarget{exploration-des-donnees}{%
+\subsection{Exploration des données}\label{exploration-des-donnees}}
+
+\nopandoc{\begin{redbox}}
+
+Prenez le temps d'explorer vos données avant toutes analyses
+\nopandoc{\end{redbox}}
+
+\begin{itemize}
+\tightlist
+\item
+  Explorer les données et les covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Explorer le plan d'échantillonnage
+  \item
+    Explorer les liens potentiels entre les densités et les covariables
+  \item
+    Explorer les futurs paramètres de modélisation (interactions, distributions)
+  \end{itemize}
+\end{itemize}
+
+\advert{Souvenez-vous toujours des objectifs de votre étude !}
+
+\exo{Question : Que recherchons-nous dans cette exploration ?}
+
+\hypertarget{preparation}{%
+\section{Préparation}\label{preparation}}
+
+\hypertarget{structure-des-dossiers}{%
+\subsection{Structure des dossiers}\label{structure-des-dossiers}}
+
+\advert{Il convient de toujours conserver les fichiers originaux : les reprojections entraînent toujours quelques pertes, mieux vaut revenir aux originaux lorsque c'est possible.}
+
+L'arborescence de votre dossier de travail est la suivante :
+
+\begin{itemize}
+\tightlist
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} 01\_Original\_data
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} DEPARTEMENTS
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} Sedim\_GDG\_wgs84
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-file_Blue_12px} bathy\_GDG\_1000\_merc (and co)
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-file_Blue_12px} Data\_Vilaine\_solea.csv
+  \end{itemize}
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} 02\_Outputs
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} 03\_Figures
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/thinkridentity/inst/img/icon-folder_Blue_12px} 04\_Functions
+\end{itemize}
+
+\hypertarget{debutons-avec-r}{%
+\subsection{Débutons avec R}\label{debutons-avec-r}}
+
+\begin{itemize}
+\tightlist
+\item
+  Créer un projet Rstudio dans le dossier principal de travail.
+\item
+  Ouvrez le script R : ``Classic\_PresAbs\_Positive\_HSI\_Student.R''
+\item
+  Lister les différents sous-dossier de travail au début de votre script R
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Define working directories ---------------------------------------------------}
+\NormalTok{WD <-}\StringTok{ }\KeywordTok{here}\NormalTok{()}
+\CommentTok{# Folder of original files}
+\NormalTok{origWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"01_Original_data"}\NormalTok{)}
+\CommentTok{# Folder for outputs}
+\NormalTok{saveWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"02_Outputs"}\NormalTok{)}
+\CommentTok{# Folder where to save outputs from R}
+\NormalTok{figWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"03_Figures"}\NormalTok{)}
+\CommentTok{# Folder where complementary functions are stored}
+\NormalTok{funcWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"04_Functions"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{modele-delta}{%
+\section{Modèle Delta}\label{modele-delta}}
+
+\hypertarget{etapes}{%
+\subsection{Étapes}\label{etapes}}
+
+Le modèle sur les données complètes n'était pas satisfaisant. Pour mieux prendre en compte (1) les données d'absences et (2) les fortes valeurs de densités, nous allons utiliser un approche Delta. Le modèle Delta sépare les données en deux sous-groupes, un pour la présence-absence, l'autre pour les densités lorsqu'il y a présence.
+
+\begin{itemize}
+\tightlist
+\item
+  Construction d'un modèle de présence / absence
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Distribution binomiale
+  \item
+    Prédiction de probabilités de présence
+  \end{itemize}
+\item
+  Construction d'un modèle sur données positives
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Distribution à définir
+  \item
+    Prédiction des densités lorsqu'il y a présence
+  \end{itemize}
+\end{itemize}
+
+Puisque les modèles sont ajustés séparément, ils peuvent inclure des covariables différentes.
+
+\begin{itemize}
+\tightlist
+\item
+  L'approche Delta couple les deux sous-modèles
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Sous-modèle Binomial : \(p_{0/1}\)
+  \item
+    Sous-modèle positif : \(Dens_{+}\)
+  \item
+    Couplage: \(Density = p_{0/1} \cdot Dens_{+}\)
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{sous-modele-sur-donnees-positives}{%
+\subsection{Sous-modèle sur données positives}\label{sous-modele-sur-donnees-positives}}
+
+\hypertarget{etapes-1}{%
+\subsubsection{Étapes}\label{etapes-1}}
+
+La procédure à adopter avec le sous-groupe de données est la même qu'avec le jeu de données complet.
+
+\begin{itemize}
+\tightlist
+\item
+  Créer un sous-jeu de données contenant uniquement les observations positives
+\item
+  Explorer ce nouveau jeu de données
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Explorer les effets potentiels des covariables
+  \item
+    Explorer les potentielles loi de distributions
+  \item
+    Tester les interactions
+  \end{itemize}
+\item
+  Choisir le meilleur modèle\\
+  .
+\end{itemize}
+
+\hypertarget{validation-du-modele}{%
+\subsubsection{Validation du modèle}\label{validation-du-modele}}
+
+En utilisant les différents indices présenté précédemment, vous choisissez le modèle qui s'ajuste le mieux à vos données. C'est donc le meilleur modèle pour décrire vos observations. Dans notre cas, nous souhaitons aussi utiliser ce modèle pour faire de la prédiction, ce qui nécessite de sélectionner un modèle qui donne de bonnes prédictions sur des données non-utilisées pour l'ajustement du modèle. Pour cela, nous pouvons utiliser la validation croisée :
+
+\begin{itemize}
+\tightlist
+\item
+  Ajuster un modèle sur 90\% des données par exemple
+\item
+  Utiliser le modèle ajusté pour faire une prédiction pour les 10\% restants
+\item
+  Comparer les prédictions aux observations
+\item
+  Choisir le modèle ayant le meilleur indice de comparaison
+\end{itemize}
+
+Vous pourriez utiliser le coefficient de corrélation entre les prédictions et les données de validation comme un indice de qualité d'ajustement pour sélectionner le meilleur modèle. Cependant, l'erreur quadratique moyenne (MSE = Mean Squared Error) voire sa racine (RMSE = Root MSE) est l'indice recommandé. Il mesure la distance moyenne d'une observation à sa prédiction.\\
+- \exo{Le modèle sélectionné sur la base de l'AIC est-il toujours le meilleur modèle avec le RMSE ?}
+
+\hypertarget{sous-modele-binomial}{%
+\subsection{Sous-modèle Binomial}\label{sous-modele-binomial}}
+
+\hypertarget{etapes-2}{%
+\subsubsection{Étapes}\label{etapes-2}}
+
+La procédure à adopter avec le sous-groupe de données est la même qu'avec le jeu de données complet.
+
+\begin{itemize}
+\tightlist
+\item
+  Créer les observations de présence-absences à partir du jeu de données
+\item
+  Explorer ce nouveau jeu de données
+\item
+  Utiliser une distribution binomiale
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Tester les covariables, les interactions, les fonctions de lien, les critères de qualité
+  \end{itemize}
+\item
+  Choisir le meilleur modèle
+\end{itemize}
+
+\hypertarget{exploration}{%
+\subsubsection{Exploration}\label{exploration}}
+
+\hypertarget{ajuster-un-modele-binomial-avec-une-fonction-de-lien}{%
+\subsubsection{Ajuster un modèle binomial avec une fonction de lien}\label{ajuster-un-modele-binomial-avec-une-fonction-de-lien}}
+
+Le choix de la distribution pour un modèle de présence-absence est simple, c'est un modèle binomial. Cepedant, un modèle est généralement ajusté sur la base de résidus Gaussiens. Pour ajuster un modèle binomial, les données doivent être transformées de telle sorte qu'on puisse ajuster un modèle linéaire Gaussien classique dessus. Pour cela, nous utilisons une fonction de lien. La fonction de lien classique d'un modèle binomial est la fonction logit, mais ce n'est pas la seule. Vous pouvez tester cloglog, probit ou cauchit.
+
+\hypertarget{qualite-dajustement-dun-modele-binomial}{%
+\subsubsection{Qualité d'ajustement d'un modèle binomial}\label{qualite-dajustement-dun-modele-binomial}}
+
+Une mesure couramment utilisée pour la qualité d'ajustement d'un modèle binomial est ``l'aire sous la courbe'' (AUC : Area Under the Curve). Un objectif des modèles binomiaux étant de prédire un succès ou un échec, et non pas seulement une probabilité de succès, on peut vouloir définir un seuil (intuitivement 0.5 par exemple) qui transforme la probabilité de présence en présence ou absence. L'AUC est en quelque sorte une probabilité de classer correctement les présences et absences. Une définition plus complète serait :
+
+\begin{quote}
+La probabililité moyenne pour qu'une observation=1 et une observation=0 choisies de manière aléatoire dans le jeu de données montrent une probabilité de présence prédite supérieure pour l'observation=1 par rapport à celle de l'observation=0
+\end{quote}
+
+Ainsi, \(AUC = 1\) montrerait un modèle ``parfait'', mais \(AUC = 0.5\) montrerait un modèle plus mauvais que le hasard.
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.9\linewidth]{FR_Classic_PresAbs_Positive_HSI_Student_files/figure-latex/RFigAUCPA-1} 
+
+}
+
+\caption{(a) Prédiction vs Observations. (b) Courbe ROC d'un modèle binomial}\label{fig:RFigAUCPA}
+\end{figure}
+
+\hypertarget{choix-du-meilleur-seuil}{%
+\subsubsection{Choix du meilleur seuil}\label{choix-du-meilleur-seuil}}
+
+\begin{itemize}
+\item
+  \exo{Le modèle sélectionné sur la base de l'AIC est-il toujours le meilleur modèle avec l'AUC sur les données de validation ?}
+\end{itemize}
+
+\hypertarget{couplage-des-deux-sous-modeles}{%
+\subsection{Couplage des deux sous-modèles}\label{couplage-des-deux-sous-modeles}}
+
+\hypertarget{lapproche-delta}{%
+\subsubsection{L'approche Delta}\label{lapproche-delta}}
+
+L'approche Delta est la méthode pour coupler les deux sous-modèles. En réalité, les deux modèles sont simplement multipliés l'un à l'autre.
+
+Le couplage des deux sous-modèles c'est :
+
+\begin{itemize}
+\tightlist
+\item
+  Sous-modèle binomial: \(p_{0/1} \sim Bathymetry + Sediment\)
+\item
+  Sous-modèle positif: \(Dens_{+} \sim Bathymetry\)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Si log-transformation: \(Dens_{+} = exp(log(Y_{+})) \times exp(-0.5 \cdot \sigma^{2} \cdot log(Y_{+}))\)
+  \end{itemize}
+\item
+  Couplage: \(Density = p_{0/1} \cdot Dens_{+}\)
+\end{itemize}
+
+\hypertarget{modele-dhabitat}{%
+\section{Modèle d'habitat}\label{modele-dhabitat}}
+
+\hypertarget{etapes-3}{%
+\subsection{Étapes}\label{etapes-3}}
+
+La réalisation d'une carte de distribution d'espèce (Fig. \ref{fig:figProcedureHSI}) nécessite :
+
+\begin{itemize}
+\tightlist
+\item
+  Un modèle d'habitat potentiel
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Indice de qualité d'habitat
+  \item
+    Modèle: \(Density \sim Bathymetry + Sediment\)
+  \end{itemize}
+\item
+  Les cartes complètes des covariables
+\item
+  Une carte des prédictions du modèle
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.7\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Schema_Modele} 
+
+}
+
+\caption{Procédure pour cartographier une distribution d'espèce}\label{fig:figProcedureHSI}
+\end{figure}
+
+Une manière simple de réaliser la carte des prédictions est de créer un raster qui rassemble l'information de toutes les cartes des covariables nécessaires, puis d'utiliser le modèle pour prédire dans chaque cellule du raster (Fig. \ref{fig:figRasterHSI}).
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.7\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/HSI} 
+
+}
+
+\caption{Prédiction de densité pour chaque cellule d'une carte au format raster}\label{fig:figRasterHSI}
+\end{figure}
+
+\hypertarget{preparation-des-donnees}{%
+\subsection{Préparation des données}\label{preparation-des-donnees}}
+
+Pour pouvoir faire les prédictions dans le raster, ses couches doivent avoir le même nom que les colonnes du jeu de données. De plus, un raster est une matrice de valeurs numériques, ce qui oblige à convertir les covariables en classe en valeurs numériques, de telle sorte que les niveau de facteur du raster correspondent à ceux des données, et donc existent dans les modèles. \advert{Soyez prudents avec la conversion vers des valeurs numériques, les données doivent rester au format facteur et ne doivent pas être utilisées comme valeurs numériques dans les modèles !}
+
+\hypertarget{predictions}{%
+\subsection{Prédictions}\label{predictions}}
+
+La fonction \codecommand{predict} a une méthode pour pouvoir être utilisée directement sur un objet Raster (Fig. \ref{fig:RFigHSIMap}).
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.9\linewidth]{FR_Classic_PresAbs_Positive_HSI_Student_files/figure-latex/RFigHSIMap-1} 
+
+}
+
+\caption{Prédiction des densités de soles en baie de Vilaine. Échelle de couleur en fonction des quantiles des données originales (10\%, 50\%, 75\%, 95\%).}\label{fig:RFigHSIMap}
+\end{figure}
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+\hypertarget{modelisation}{%
+\subsection{Modélisation}\label{modelisation}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Importance de l'exploration des données}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Validation des données
+  \item
+    Loi de distribution
+  \item
+    Options pour les modèles
+  \end{itemize}
+\item
+  \textbf{Étude des modèles : une approche itérative}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Choix de la loi de distribution
+  \item
+    Choix des combinaisons de covariables
+  \item
+    Vérification des hypothèses
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Analyse des résidus
+    \item
+      Critères de qualité d'ajustement
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Gardez toujours vos objectifs en tête !}
+\end{itemize}
+
+\hypertarget{modele-delta-1}{%
+\subsection{Modèle Delta}\label{modele-delta-1}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Utilité d'un modèle Delta}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Les données brutes ne peuvent être modélisées
+  \item
+    Sens biologique
+  \item
+    Présence \& densités: pas forcément les mêmes covariables
+  \end{itemize}
+\item
+  \textbf{Utilisation d'un modèle Delta}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Prédictions utiles
+  \item
+    Les paramètres des sous-modèles n'ont pas de sens dans le modèle couplé
+  \end{itemize}
+\item
+  \textbf{Alternatives}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Autres modèles zero-inflated ? Distribution tweedie ?
+  \item
+    GAM (Attention aux données nécessaires et à l'interprétation)
+  \item
+    Régression quantile (habitat préférentiels)
+  \item
+    Random forest (Attention à votre question)
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{modeles-de-distribution-despeces}{%
+\subsection{Modèles de distribution d'espèces}\label{modeles-de-distribution-despeces}}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Outils utiles pour les connaissances biologiques et pour la gestion}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Modèle Delta approprié pour les données d'espèces marines
+  \item
+    Fiable si utilisé avec précaution
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Ce ne sont que des corrélations\ldots{}
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{Cette formation est un exemple simple}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    D'autres perspectives
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Ajouter une covariable biotique
+    \item
+      Approche multi-spécifique
+    \item
+      Pressions anthropiques ?
+    \end{itemize}
+  \end{itemize}
+\item
+  \textbf{D'autres outils existent}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Votre question détermine l'outil à utiliser
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{exemples-dapplications}{%
+\subsection{Exemples d'applications}\label{exemples-dapplications}}
+
+\begin{itemize}
+\tightlist
+\item
+  Effet de la destruction d'habitat sur la biomasse de juvéniles (Fig. \ref{fig:figHSIConclusion})
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Cas de la sole commune dans l'estuaire de Seine
+  \item
+    Comparaison entre 1850 et 2004
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Perte en surface : 33\%
+    \item
+      Perte en biomasse : 42\%
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/SeineEstuaryLoss} 
+
+}
+
+\caption{Modélisation des effets de la destruction d'habitats sur la biomasse de sole en Seine. Rochette, S., Rivot, E., Morin, J., Mackinson, S., Riou, P., Le Pape, O. (2010). Effect of nursery habitat degradation on flatfish population renewal. Application to Solea solea in the Eastern Channel (Western Europe). Journal of sea Research, 64 : 34-44.}\label{fig:figHSIConclusion}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  Estimation de stock pour la gestion (Fig. \ref{fig:figHSIConcl2})
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Cas des laminaires du Parc marin d'Iroise
+  \item
+    Estimation des biomasses
+  \item
+    Validation avec les pêcheurs
+  \item
+    Proposition de gestion spatialisée
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.6\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Prediction_Digitata} 
+
+}
+
+\caption{Estimation spatialisée des biomasses de laminaires dans le parc marin d'Iroise pour la gestion de la ressource. Bajjouk T., Rochette S., Ehrhold A., Laurans M., Le Niliot P. (2015). Multi-approach mapping to help spatial planning and management of the kelp species L. digitata and L. hyporborea: Case study of the Molène archipelago, Brittany. Journal of Sea Research.}\label{fig:figHSIConcl2}
+\end{figure}
+
+
+\end{document}

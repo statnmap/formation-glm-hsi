@@ -1,0 +1,911 @@
+\documentclass[french,a4paper]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[top=2.4cm, bottom=2.1cm, outer=2cm, inner=4cm, headheight=40pt]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Formation aux GLM et aux modèles de distribution d'espèces},
+            pdfauthor={Sébastien Rochette},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[shorthands=off,main=french]{babel}
+\else
+  \usepackage{polyglossia}
+  \setmainlanguage[]{french}
+\fi
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{longtable,booktabs}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Formation aux GLM et aux modèles de distribution d'espèces}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Sébastien Rochette}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{12 mars, 2018}
+
+% GIS and R Course
+% author : Sébastien Rochette
+% contact : sebastienrochettefr@gmail.com
+% website : http://statnmap.com
+
+% \documentclass[a4paper]{article}
+% Lang EN = 1, FR = 2
+% \def\Lang{\Sexpr{Lang}} % 
+% -- Command to find which language is loaded in babel -- %
+% http://tex.stackexchange.com/questions/287667/ifpackagewith-doesnt-behave-as-i-expected-with-global-options
+\usepackage{xparse}
+\ExplSyntaxOn
+\NewDocumentCommand{\packageoptionsTF}{mmmm}
+ {
+  \stanton_package_options:nnTF { #1 } { #2 } { #3 } { #4 }
+ }
+
+\cs_new_protected:Nn \stanton_package_options:nnTF
+ {
+  \clist_map_inline:nn { #2 }
+   {
+    \clist_if_in:cnTF { opt@#1.sty } { ##1 }
+     { #3 } % it's a local option
+     {
+      \clist_if_in:cnTF { @classoptionslist } { ##1 }
+       { #3 } % it's a global option
+       { #4 }
+     }
+   }
+}
+\ExplSyntaxOff
+
+% -- Define a variable depending on language -- %
+\newcommand{\Lang}{0}
+
+\makeatletter
+\@ifpackageloaded{babel}{
+  \packageoptionsTF{babel}{english}{%
+    \renewcommand{\Lang}{1}% english
+  }{%
+    \renewcommand{\Lang}{2}% french
+  }
+}{}
+\makeatother
+
+% -- Define specific lateX options depending on language -- %
+\ifnum\Lang = 1
+  % \usepackage[english]{babel}
+  \usepackage{enumitem}
+  \setlist{itemsep = 0pt}
+  \setlist{topsep = 0pt}
+\fi
+\ifnum\Lang = 2
+  % \usepackage[french]{babel}
+\fi
+
+% --
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnPageRmd.tex}
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnFormeTitreFormationRmd.tex}
+% \input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnFormeTitreFormationRmd_NoSectionBreak.tex}
+
+\ifnum\Lang = 1
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/header_EN_Seb.tex}
+\fi
+\ifnum\Lang = 2
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/header_FR_Seb.tex}
+\fi
+
+% -- Graphic path -- %
+% \graphicspath{{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/img_QGIS/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/figureR/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/Figures_Pres/}{/mnt/Data/autoentrepreneur/Presentation_Produits/SRochettePresentation-img/}}
+\graphicspath{{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/}}
+
+% \title{GIS and R Course}
+% \author{Sébastien Rochette}
+
+\setcounter{section}{0} % Value for first section
+
+
+\hypersetup{pdfauthor=Sébastien Rochette, pdftitle=Formation ThinkR, pdfsubject=Formation à R, pdfkeywords=R, pdfcreator=pdflatex}
+
+%----------------------------------------------------------------------------------------
+% TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\newcommand*{\titleGM}{\begingroup % Create the command for including the title page in the document
+\hbox{ % Horizontal box
+%\hspace*{0.2\textwidth} % Whitespace to the left of the title page
+%\hspace*{0.2\textwidth}
+\OtherGrey{\rule{1pt}{\textheight}} % Vertical line
+\hspace*{0.05\textwidth} % Whitespace between the vertical line and title page text
+\parbox[b]{0.75\textwidth}{ % Paragraph box which restricts text to less than the width of the page
+
+{\noindent\Huge\bfseries\textstyleInternetlink{ Formation à R}}\\[2\baselineskip] % Title
+{\large{Modélisation avec les GLM}}\\[4\baselineskip] % Tagline or further description
+{\Large \textsc{Sébastien Rochette, ThinkR}} % Author name
+
+\vspace{0.5\textheight} % Whitespace between the title block and the publisher
+{\noindent \href{url:https://thinkr.fr}{ThinkR}}\\[\baselineskip] % Publisher and logo
+}}
+\endgroup}
+
+\AtBeginDocument{\let\maketitle\relax}
+
+\begin{document}
+\maketitle
+
+\pagenumbering{arabic}
+
+%\bigskip
+%\medskip
+
+%\begin{center}
+%\href{url:http://statnmap.com}{\textstyleInternetlink{\huge{Modelling distribution of species in the Bay of Biscay}}}\\
+%\large{Sébastien Rochette}\\
+%\end{center}
+\setcounter{page}{0}
+\pagestyle{empty} % Removes page numbers
+\AddToShipoutPicture{\BackgroundPicTitle}
+
+\titleGM
+
+\pagebreak
+\pagestyle{fancy}
+% \clearpage\setcounter{page}{1}\pagestyle{Standard}
+\AddToShipoutPicture{\BackgroundPic}
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{Préface}\label{preface}
+
+\emph{La version d'origine de cette formation a été créée par Olivier Le
+Pape et Étienne Rivot à Agrocampus Ouest (Rennes, France). Depuis mon
+doctorat dans leur équipe, je mets à jour constamment cette formation au
+gré de ma recherche et de l'évolution du logiciel R.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+  \CommentTok{# Generated with R and rmarkdown: Roadmap version - Students}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Présentation de l'étude}\label{presentation-de-letude}
+
+\textbf{\advert{Le contexte et les objectifs de votre étude définissent le type de modélisation que vous allez mettre en place sur votre jeu de données.}\\
+Ici, nous utilisons les modèles linéaires généralisés pour produire une
+carte de distribution moyenne de la nourricerie de soles communes de la
+baie de Vilaine}.
+
+\subsection{Contexte}\label{contexte}
+
+\begin{itemize}
+\tightlist
+\item
+  Les zones côtières et les estuaires sont des habitats halieutiques
+  essentiels
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Zones à forte production
+  \item
+    Nourriceries
+  \item
+    Zones restreintes avec de fortes densités (Fig.
+    \ref{fig:figPlaiceBox})
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.5\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/PlaiceBox_crop} 
+
+}
+
+\caption{Plaice box (Rijnsdorp \emph{et al.})}\label{fig:figPlaiceBox}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  Pression anthropique élevée
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Perte de surface disponibles (Fig. \ref{fig:figHighPressure}a)
+  \item
+    Qualité des habitats alterée (Fig. \ref{fig:figHighPressure}b)
+  \end{itemize}
+\end{itemize}
+
+
+
+
+\begin{itemize}
+\tightlist
+\item
+  Impact sur le renouvellement des populations
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Jeune stades = Gouleau d'étranglement
+  \item
+    La taille et la qualité des nourriceries côtières influent sur la
+    production de juvéniles
+  \end{itemize}
+\end{itemize}
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/HighPressure} 
+
+}
+
+\caption{(a) L'estuaire de la Seine. (b) Niveau de
+contamination chimique le long des côtes françaises (Ifremer, 2011)}\label{fig:figHighPressure}
+\end{figure}
+
+\subsection{Objectifs}\label{objectifs}
+
+Déterminer les facteurs ayant une influence sur la distribution des
+poissons plats (\emph{Solea solea}) en Baie de Vilaine et cartographier
+la distribution moyenne des densités.
+
+\begin{itemize}
+\tightlist
+\item
+  Cartographier les habitats potentiels nécessite:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Connaissance des habitats de juvéniles
+  \item
+    Campagnes d'échantillonnage dans la zone d'étude
+  \item
+    Connaissance des covariables environnementales ayant potentiellement
+    de l'influence
+
+    \begin{itemize}
+    \tightlist
+    \item
+      Cartes exhaustives des covariables environnementales
+    \end{itemize}
+  \end{itemize}
+\item
+  Une approche statistique en deux étapes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Modèle statistique reliant les densités aux covariables
+  \item
+    Prédire les habitats potentiels
+  \end{itemize}
+\end{itemize}
+
+\subsection{Données}\label{donnees}
+
+Campagne standardisée de chalut à perche dans la baie de Vilaine (Fig.
+\ref{fig:figVilaineCampaign})
+
+\begin{itemize}
+\tightlist
+\item
+  1984 -- 2010
+\item
+  En autumne
+\item
+  Juvéniles de l'année (Âge 0)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Nb individus / 1000m\textsuperscript{2}
+  \end{itemize}
+\end{itemize}
+
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Vilaine_Campaign} 
+
+}
+
+\caption{(a) L'estuaire de la Vilaine. (b) Chalut à
+perche. (c) Situation des stations d'échantillonnage.}\label{fig:figVilaineCampaign}
+\end{figure}
+
+\subsection{Covariables}\label{covariables}
+
+\begin{itemize}
+\tightlist
+\item
+  Bathymétrie (Fig. \ref{fig:figCovariates}a)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    MNT à 1000m de résolution
+  \item
+    Projection Mercator
+  \end{itemize}
+\item
+  Structure sédimentainre (Fig. \ref{fig:figCovariates}b)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Fichier shape de polygones
+  \item
+    Coordonnées géographiques
+  \end{itemize}
+\item
+  Zones biologiques (Fig. \ref{fig:figCovariates}c)
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Combinaison bathymétrie, sédiment, habitat
+  \item
+    Fichier shape de polygones
+  \item
+    Coordonnées géographiques
+  \end{itemize}
+\end{itemize}
+
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Day2-02Vilaine-Covariates_abc} 
+
+}
+
+\caption{Covariables en baie de Vilaine. (a) Structure
+sédimentaire, (b) Bathymétrie et (c) Zones biologiques.}\label{fig:figCovariates}
+\end{figure}
+
+\subsection{Ajuster un modèle de distribution
+d'espèces}\label{ajuster-un-modele-de-distribution-despeces}
+
+\begin{itemize}
+\tightlist
+\item
+  Croiser les données avec les cartes de covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Utiliser un modèle linéaire
+  \end{itemize}
+\item
+  Utiliser les cartes des covariables pour la prédiction (Fig.
+  \ref{fig:figProcedure})
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Une prédiction pour chaque cellule d'un raster
+  \end{itemize}
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.7\linewidth]{/mnt/Data/ThinkR/Gitlab/formation-glm/03_Figures/00_Presentation/Schema_Modele} 
+
+}
+
+\caption{Procédure pour un modèle de distribution d'espèce}\label{fig:figProcedure}
+\end{figure}
+
+\subsection{Exploration des données}\label{exploration-des-donnees}
+
+\nopandoc{\begin{redbox}} Prenez le temps d'explorer vos données avant
+toutes analyses \nopandoc{\end{redbox}}
+
+\begin{itemize}
+\tightlist
+\item
+  Explorer les données et les covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Explorer le plan d'échantillonnage
+  \item
+    Explorer les liens potentiels entre les densités et les covariables
+  \item
+    Explorer les futurs paramètres de modélisation (interactions,
+    distributions)
+  \end{itemize}
+\end{itemize}
+
+\advert{Souvenez-vous toujours des objectifs de votre étude !}
+
+\exo{Question : Que recherchons-nous dans cette exploration ?}
+
+\section{Préparation}\label{preparation}
+
+\subsection{Structure des dossiers}\label{structure-des-dossiers}
+
+\advert{Il convient de toujours conserver les fichiers originaux : les reprojections entraînent toujours quelques pertes, mieux vaut revenir aux originaux lorsque c'est possible.}
+
+L'arborescence de votre dossier de travail est la suivante :
+
+\begin{itemize}
+\tightlist
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+  01\_Original\_data
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+    DEPARTEMENTS
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+    Sedim\_GDG\_wgs84
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-file_Blue_12px}
+    bathy\_GDG\_1000\_merc (and co)
+  \item
+    \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-file_Blue_12px}
+    Data\_Vilaine\_solea.csv
+  \end{itemize}
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+  02\_Outputs
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+  03\_Figures
+\item
+  \includegraphics[width=0.26in]{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px}
+  04\_Functions
+\end{itemize}
+
+\subsection{Débutons avec R}\label{debutons-avec-r}
+
+\begin{itemize}
+\tightlist
+\item
+  Créer un projet Rstudio dans le dossier principal de travail.
+\item
+  Ouvrez le script R : ``Quick\_AllDataModel\_Student.R''
+\item
+  Lister les différents sous-dossier de travail au début de votre script
+  R
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Define working directories ---------------------------------------------------}
+\NormalTok{WD <-}\StringTok{ }\KeywordTok{here}\NormalTok{()}
+\CommentTok{# Folder of original files}
+\NormalTok{origWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"01_Original_data"}\NormalTok{)}
+\CommentTok{# Folder for outputs}
+\NormalTok{saveWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"02_Outputs"}\NormalTok{)}
+\CommentTok{# Folder where to save outputs from R}
+\NormalTok{figWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"03_Figures"}\NormalTok{)}
+\CommentTok{# Folder where complementary functions are stored}
+\NormalTok{funcWD <-}\StringTok{ }\KeywordTok{here}\NormalTok{(}\StringTok{"04_Functions"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\section{Exploration des données}\label{exploration-des-donnees-1}
+
+\subsection{Étapes}\label{etapes}
+
+\advert{Souvenez-vous : Définissez ce que vous cherchez, à quelles questions vous souhaiteriez répondre !}
+
+\begin{itemize}
+\tightlist
+\item
+  Explorer la répartition du plan d'échantillonnage en fonction des
+  covariables environementales
+\item
+  Explorer les données d'observation au regard des covariables
+  environnementales pour détecter de potentielles corrélations
+\item
+  Explorer les interactions entre les effets des covariables sur les
+  observations
+\item
+  Explorer les lois de distribution possibles (gaussian, log-normal,
+  \ldots{}) des observations en fonctions des combinaisons de
+  covariables \nopandoc{\begin{redbox}} Les scripts qui sont fournis ne
+  sont que des exemples, ils ne sont en aucun cas les meilleures
+  solutions ! Faîtes vos propres tests ! \nopandoc{\end{redbox}}
+\end{itemize}
+
+\subsection{Liste des différentes
+étapes}\label{liste-des-differentes-etapes}
+
+\begin{itemize}
+\tightlist
+\item
+  Lire le jeu de données spatialisé (Fig. \ref{fig:RFigDataGG})
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.9\linewidth]{FR_Quick_AllDataModel_Student_files/figure-latex/RFigDataGG-1} 
+
+}
+
+\caption{Répartition des stations d'échantillonnage}\label{fig:RFigDataGG}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  Ajouter une nouvelle covariable : la bathymétrie divisée en classes
+
+  \begin{itemize}
+  \tightlist
+  \item
+    " \textless{} 5 m``,''5-10 m``,''10-20 m``,''20-50 m"
+  \end{itemize}
+\item
+  Explorer la répartition des observations en fonctions des covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Centrer l'analyse sur l'année, la bathymétrie et le sédiment
+  \item
+    \exo{Que remarquez-vous ?}
+  \end{itemize}
+\item
+  Explorer les covariables ayant potentiellement des effets sur les
+  densités
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \exo{Quelles covariables pourraient avoir une influence ?}
+  \end{itemize}
+\end{itemize}
+
+Les modèles statistiques que nous allons utiliser peuvent se résumer de
+cette façon : \[Density = Covar1 + Covar2 + Noise\] Comme vous le savez,
+on chercher toujours à savoir si les données sont gaussienne pour
+pouvoir procéder à l'analyse statistique. Si elles ne sont pas
+gaussienne, nous devons définir le type de distribution pour pouvoir
+utiliser une transformation de données.
+
+\begin{itemize}
+\tightlist
+\item
+  Explorer la distribution des données
+\item
+  \exo{Quelle est la distribution la plus intéressante ?}
+\end{itemize}
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.9\linewidth]{FR_Quick_AllDataModel_Student_files/figure-latex/RFigDistrib-1} 
+
+}
+
+\caption{(ref:RFigDistribCap)}\label{fig:RFigDistrib}
+\end{figure}
+
+\begin{itemize}
+\tightlist
+\item
+  Explorer les interactions potentielles entre les covariables
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \exo{Qu'en pensez-vous ?}
+  \end{itemize}
+\end{itemize}
+
+\section{Modélisation}\label{modelisation}
+
+\subsection{Étapes}\label{etapes-1}
+
+\advert{Souvenez-vous: Définissez ce que vous cherchez, à quelles questions vous souhaiteriez répondre !}
+
+\begin{itemize}
+\tightlist
+\item
+  Tester les différentes formes de modèles au regard des combinaisons de
+  covariables et des formes de distributions des résidus
+\item
+  Comparer les modèles à l'aide des outils statistiques à disposition
+  (AIC, anova, \ldots{}), de la validation croisée mais aussi de la
+  connaissance du jeu de données et des questions ciblées
+\item
+  Analyser les résidus des modèles. Analyser leur distribution et
+  s'assurer que les hypothèses de construction sont vérifiées.\\
+  \advert{C'est seulement lorsque les hypothèses sur la distribution des résidus sont vérifiées, que les covariables et les interactions sélectionnées peuvent commencer à être interprétées...}
+  \nopandoc{\begin{redbox}} Les scripts qui sont fournis ne sont que des
+  exemples, ils ne sont en aucun cas les meilleures solutions ! Faîtes
+  vos propres tests ! \nopandoc{\end{redbox}}
+\end{itemize}
+
+\subsection{Interpréter les sorties de
+modèles}\label{interpreter-les-sorties-de-modeles}
+
+Lorsque vous ajustez un modèle linéaire (lm ou glm), vous pouvez
+utiliser différents tests statistiques et visuels qui répondent à
+différentes questions. Votre question principale pourrait être :
+
+\begin{itemize}
+\tightlist
+\item
+  ``Est-ce que mes covariables ont un effet sur mes observations ?''. En
+  réalité, ce n'est pas exactement la question à laquelle va répondre
+  votre modèle. Ce serait plutôt ``Est-ce que les covariables que j'ai
+  utilisées expliquent une part de la variabilité de mes observations
+  ?''
+\end{itemize}
+
+Pour que vous puissiez interpréter les différentes sorties de modèles,
+dans ce document, nous allons regarder le modèle suivant :
+\[lm(Density ~ Bathy + Sedim, data = dataset)\] \emph{Ce modèle n'est
+pas forcément le meilleur modèle à choisir !}
+
+\subsubsection{Summary(lm)}\label{summarylm}
+
+Cette fonction montre un tableau de tests de significativité (Table
+\ref{tab:RTableSummary}). Ce sont des tests de Student. Ils testent si
+la valeur estimée pour un effet est ou non significativement différente
+de zéro. Ainsi, si une covariable a un effet non significativement
+différent de l'effet nul, il est probablement inutile de la conserver
+dans le modèle.
+
+\begin{table}
+
+\caption{\label{tab:RTableSummary}Exemple d'une sortie de `summary(lm)`}
+\centering
+\begin{tabular}[t]{l|r|r|r|r}
+\hline
+  & Estimate & Std. Error & t value & Pr(>|t|)\\
+\hline
+(Intercept) & 173.4 & 14.27 & 12.152 & 0.000\\
+\hline
+Bathy & 14.5 & 1.71 & 8.472 & 0.000\\
+\hline
+Sedim2sand & -19.5 & 19.07 & -1.020 & 0.308\\
+\hline
+Sedim3coarse & -39.4 & 57.21 & -0.689 & 0.491\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Analyse de résidus}\label{analyse-de-residus}
+
+Une hypothèse de construction d'un modèle linéaire est
+l'homoscédasticité, aussi appelée homogénéité de la variance. Cela
+signifie que la variance de la réponse \texttt{y} est la même quelque
+soit la valeur du prédicteur \texttt{x}. Dans un modèle Gaussien
+classique ajustant \texttt{x} à \texttt{y} ainsi:
+\(y = a.x + b + \epsilon\), la variable \(\epsilon\) représente les
+résidus du modèle. Ils sont supposés être centrés sur zéro et avec une
+variance Gaussienne, leur distribution suivant ainsi la loi Gaussienne
+\(\epsilon \sim N(0, \sigma)\)
+
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics{FR_Quick_AllDataModel_Student_files/figure-latex/RFigResidualsDiag-1} 
+
+}
+
+\caption{Figures de diagnostic d'un modèle linéaire
+permettant de vérifier les hypothèses de construction.}\label{fig:RFigResidualsDiag}
+\end{figure}
+
+\subsubsection{Analyse de variance}\label{analyse-de-variance}
+
+La question à laquelle répond une \texttt{anova} (avec un test du Chi-2)
+est : Est-ce que la covariable ajoutée augmente significativitement la
+vraisemblance du modèle (ou a réduit la déviance résiduelle), comparé au
+modèle précédent, sans cette covariable ?
+
+\begin{table}
+
+\caption{\label{tab:RTableAnova}Exemple d'une `sortie` de anova(lm)}
+\centering
+\begin{tabular}[t]{l|r|r|r|r|r}
+\hline
+  & Df & Sum Sq & Mean Sq & F value & Pr(>F)\\
+\hline
+Bathy & 1 & 1607692 & 1607692 & 71.983 & 0.000\\
+\hline
+Sedim & 2 & 32206 & 16103 & 0.721 & 0.487\\
+\hline
+Residuals & 397 & 8866764 & 22334 & NA & NA\\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Critères d'Akaike (AIC) et Bayesian
+(BIC)}\label{criteres-dakaike-aic-et-bayesian-bic}
+
+L'AIC et le BIC sont des critères de qualité d'ajustement pénalisés par
+le nombre de paramètres estimés. La description (traduite) de ces
+fonctions dans R est :
+
+\begin{quote}
+Function générique calculant ``Le Critère d'Information'' d'Akaike pour
+un ou plusieurs modèles ajustés pour lesquels une ``log-vraisemblance''
+peut être obtenue, en utilisant la formule
+\(IC = -2*log-likelihood + k*npar\), où \texttt{npar} represente le
+nombre de paramètres estimés, et \texttt{k\ =\ 2} pour l'AIC classique,
+ou \texttt{k\ =\ log(n)} (\texttt{n} étant le nombre d'observations)
+pour le BIC ou SBC (Schwarz's Bayesian criterion).
+\end{quote}
+
+\subsection{Trouver le meilleur
+modèle}\label{trouver-le-meilleur-modele}
+
+La fonction \codecommand{lm} n'est utilisée que pour des modèles avec
+une distribution Gaussienne des résidus. Pour tester d'autres types de
+distributions, il faut utiliser \codecommand{glm}, avec un paramètre
+pour la famille de distribution (\codecommand{family}). Vous pouvez
+utiliser des distributions qui autorisent une plus grande queue de
+distribution que la loi Normale. Parmis les familles disponibles, vous
+pouvez tester \codecommand{poisson, quasipoisson, Gamma, Log-gaussian}.
+
+\begin{itemize}
+\tightlist
+\item
+  \exo{Quel est le meilleur modèle au regard des différents critères évoqués ?}
+\end{itemize}
+
+\begin{figure}[!h]
+
+{\centering \includegraphics{FR_Quick_AllDataModel_Student_files/figure-latex/RFigGLMResults-1} 
+
+}
+
+\caption{(ref:RFigGLMResultsCap)}\label{fig:RFigGLMResults}
+\end{figure}
+
+\subsection{Prédictions du modèle}\label{predictions-du-modele}
+
+Lorsque vous êtes satisfaits du modèle sélectionné, vous pouvez faire
+des prédictions
+
+\begin{itemize}
+\tightlist
+\item
+  Utiliser le fichier csv fourni pour voir l'effet des covariables
+  sélectionnées (Fig. \ref{fig:RFigGLMPredict})
+\end{itemize}
+
+
+
+\begin{figure}[!h]
+
+{\centering \includegraphics[width=0.8\linewidth]{FR_Quick_AllDataModel_Student_files/figure-latex/RFigGLMPredict-1} 
+
+}
+
+\caption{Prédictions du meilleur GLM sélectionné}\label{fig:RFigGLMPredict}
+\end{figure}
+
+
+\end{document}

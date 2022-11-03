@@ -1,0 +1,15 @@
+ENVI
+description = {
+/media/seb/Iomega_HDD/Travail/R-and-Stat/Formation_TD-GLM_Cours_Agro/TD_Vilaine_Delta_2014_10/Cours/01_Original_data/bathy_GDG_1000_merc.envi}
+samples = 527
+lines   = 534
+bands   = 1
+header offset = 0
+file type = ENVI Standard
+data type = 5
+interleave = bsq
+byte order = 0
+map info = {Mercator_2SP, 1, 1, -485809.589223848, 4249111.92865292, 1000, 1000}
+coordinate system string = {PROJCS["Mercator_2SP",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Mercator_2SP"],PARAMETER["standard_parallel_1",46],PARAMETER["central_meridian",0],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["Meter",1]]}
+band names = {
+Band 1}

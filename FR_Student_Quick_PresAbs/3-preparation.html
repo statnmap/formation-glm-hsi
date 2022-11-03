@@ -7,7 +7,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Formation aux GLM et aux modèles de distribution d’espèces</title>
   <meta name="description" content="Formation aux GLM et aux modèles de distribution d’espèces">
-  <meta name="generator" content="bookdown 0.6 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.7 and GitBook 2.6.7">
 
   <meta property="og:title" content="Formation aux GLM et aux modèles de distribution d’espèces" />
   <meta property="og:type" content="book" />
@@ -752,69 +752,41 @@ document.write('<div class="logos"><a href="https://thinkr.fr"><img src="data:im
 
 
 <style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
-}
-pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {  }
-@media screen {
-a.sourceLine::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 </style>
 
 </head>
@@ -847,7 +819,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="3.3.3" data-path="3-preparation.html"><a href="3-preparation.html#ajuster-un-modele-binomial-avec-une-fonction-de-lien"><i class="fa fa-check"></i><b>3.3.3</b> Ajuster un modèle binomial avec une fonction de lien</a></li>
 <li class="chapter" data-level="3.3.4" data-path="3-preparation.html"><a href="3-preparation.html#qualite-dajustement-dun-modele-binomial"><i class="fa fa-check"></i><b>3.3.4</b> Qualité d’ajustement d’un modèle binomial</a></li>
 <li class="chapter" data-level="3.3.5" data-path="3-preparation.html"><a href="3-preparation.html#choix-du-meilleur-seuil"><i class="fa fa-check"></i><b>3.3.5</b> Choix du meilleur seuil</a></li>
-<li class="chapter" data-level="3.3.6" data-path="3-preparation.html"><a href="3-preparation.html#validation-du-modele"><i class="fa fa-check"></i><b>3.3.6</b> Validation du modèle</a></li>
 </ul></li>
 </ul></li>
 </ul>
@@ -871,7 +842,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h1><span class="header-section-number">3</span> Préparation</h1>
 <div id="structure-des-dossiers" class="section level2">
 <h2><span class="header-section-number">3.1</span> Structure des dossiers</h2>
-<p>Il convient de toujours conserver les fichiers originaux : les reprojections entraînent toujours quelques pertes, mieux vaut revenir aux originaux lorsque c’est possible.</p>
+<p><span class="advert">Il convient de toujours conserver les fichiers originaux : les reprojections entraînent toujours quelques pertes, mieux vaut revenir aux originaux lorsque c’est possible.</span></p>
 <p>L’arborescence de votre dossier de travail est la suivante :</p>
 <ul>
 <li><img src="/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/icon-folder_Blue_12px.png" width="24" /> 01_Original_data
@@ -893,16 +864,16 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Ouvrez le script R : “Quick_PresAbs_Student.R”</li>
 <li>Lister les différents sous-dossier de travail au début de votre script R</li>
 </ul>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co"># Define working directories ---------------------------------------------------</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">WD &lt;-<span class="st"> </span><span class="kw">here</span>()</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co"># Folder of original files</span></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">origWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;01_Original_data&quot;</span>)</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="co"># Folder for outputs</span></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">saveWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;02_Outputs&quot;</span>)</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="co"># Folder where to save outputs from R</span></a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">figWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;03_Figures&quot;</span>)</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="co"># Folder where complementary functions are stored</span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">funcWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;04_Functions&quot;</span>)</a></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Define working directories ---------------------------------------------------</span>
+WD &lt;-<span class="st"> </span><span class="kw">here</span>()
+<span class="co"># Folder of original files</span>
+origWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;01_Original_data&quot;</span>)
+<span class="co"># Folder for outputs</span>
+saveWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;02_Outputs&quot;</span>)
+<span class="co"># Folder where to save outputs from R</span>
+figWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;03_Figures&quot;</span>)
+<span class="co"># Folder where complementary functions are stored</span>
+funcWD &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;04_Functions&quot;</span>)</code></pre></div>
 <!-- Only for Quick method -->
 </div>
 <div id="sous-modele-binomial" class="section level2">
@@ -926,33 +897,27 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="ajuster-un-modele-binomial-avec-une-fonction-de-lien" class="section level3">
 <h3><span class="header-section-number">3.3.3</span> Ajuster un modèle binomial avec une fonction de lien</h3>
 <p>Le choix de la distribution pour un modèle de présence-absence est simple, c’est un modèle binomial. Cepedant, un modèle est généralement ajusté sur la base de résidus Gaussiens. Pour ajuster un modèle binomial, les données doivent être transformées de telle sorte qu’on puisse ajuster un modèle linéaire Gaussien classique dessus. Pour cela, nous utilisons une fonction de lien. La fonction de lien classique d’un modèle binomial est la fonction logit, mais ce n’est pas la seule. Vous pouvez tester cloglog, probit ou cauchit.</p>
-<div class="figure" style="text-align: center"><span id="fig:RFigOutputsPA"></span>
-<img src="_main_files/figure-html4/RFigOutputsPA-1.png" alt="(ref:RFigOutputsPACap)" width="80%" />
-<p class="caption">
-Figure 3.1: (ref:RFigOutputsPACap)
-</p>
-</div>
 </div>
 <div id="qualite-dajustement-dun-modele-binomial" class="section level3">
 <h3><span class="header-section-number">3.3.4</span> Qualité d’ajustement d’un modèle binomial</h3>
 <p>Une mesure couramment utilisée pour la qualité d’ajustement d’un modèle binomial est “l’aire sous la courbe” (AUC : Area Under the Curve). Un objectif des modèles binomiaux étant de prédire un succès ou un échec, et non pas seulement une probabilité de succès, on peut vouloir définir un seuil (intuitivement 0.5 par exemple) qui transforme la probabilité de présence en présence ou absence. L’AUC est en quelque sorte une probabilité de classer correctement les présences et absences. Une définition plus complète serait :</p>
 <blockquote>
-<p>La probabililité moyenne pour qu’une observation=1 et une observation=0 choisies de manière aléatoire dans le jeu de données montrent une probabilité de présence prédite supérieure pour l’observation=1 par rapportà celle de l’observation=0</p>
+<p>La probabililité moyenne pour qu’une observation=1 et une observation=0 choisies de manière aléatoire dans le jeu de données montrent une probabilité de présence prédite supérieure pour l’observation=1 par rapport à celle de l’observation=0</p>
 </blockquote>
 <p>Ainsi, <span class="math inline">\(AUC = 1\)</span> montrerait un modèle “parfait”, mais <span class="math inline">\(AUC = 0.5\)</span> montrerait un modèle plus mauvais que le hasard.</p>
+
 <div class="figure" style="text-align: center"><span id="fig:RFigAUCPA"></span>
-<img src="_main_files/figure-html4/RFigAUCPA-1.png" alt="(ref:RFigAUCPACap)" width="90%" />
+<img src="_main_files/figure-html/RFigAUCPA-1.png" alt="(a) Prédiction vs Observations. (b) Courbe ROC d’un modèle binomial" width="90%" />
 <p class="caption">
-Figure 3.2: (ref:RFigAUCPACap)
+Figure 3.1: (a) Prédiction vs Observations. (b) Courbe ROC d’un modèle binomial
 </p>
 </div>
 </div>
 <div id="choix-du-meilleur-seuil" class="section level3">
 <h3><span class="header-section-number">3.3.5</span> Choix du meilleur seuil</h3>
-</div>
-<div id="validation-du-modele" class="section level3">
-<h3><span class="header-section-number">3.3.6</span> Validation du modèle</h3>
-<p>De même que pour le modèle sur les données positives, vous pouvez utiliser la validation croisée en <span class="math inline">\(k\)</span> parties pour sélectionner le meilleur modèle en terme de prédiction. Pour un modèle binomial, vous pouvez utiliser l’AUC sur le jeu de données de validation comme un indice de qualité d’ajustement.</p>
+<ul>
+<li><span class="exo">Le modèle sélectionné sur la base de l’AIC est-il toujours le meilleur modèle avec l’AUC sur les données de validation ?</span></li>
+</ul>
 
 </div>
 </div>
@@ -981,10 +946,11 @@ gitbook.start({
 "facebook": false,
 "twitter": false,
 "google": false,
+"linkedin": false,
 "weibo": false,
 "instapper": false,
 "vk": false,
-"all": ["facebook", "google", "twitter", "weibo", "instapaper"]
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
 },
 "fontsettings": {
 "theme": "white",
@@ -1008,7 +974,7 @@ gitbook.start({
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    var src = "true";
+    var src = "";
     if (src === "" || src === "true") src = "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:" && /^https?:/.test(src))
       src = src.replace(/^https?:/, '');

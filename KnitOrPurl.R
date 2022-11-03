@@ -1,11 +1,11 @@
 # library(knitr)
 # library(rmarkdown)
 # Library KnitFmt sur github :
-# devtools::install_github("statnmap/Rmarkdown_tips",
-# lib = "/usr/local/lib/R/site-library")
+# devtools::install_github("statnmap/Rmarkdown_tips")
 # emojifont
 # devtools::install_github("GuangchuangYu/emojifont")
 library(KnitFmt)
+library(here)
 
 # Directories ------------------------------------------------------------------
 wd <- here()
@@ -13,7 +13,7 @@ wd <- here()
 setwd(wd)
 
 fig.auto.WD <-
-  "/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img"
+  "img"
 
 # CASES ------------------------------------------------------------------------
 # Create a HTML only with Alldata and another for Delta model
@@ -33,7 +33,7 @@ eval.HSI <- FALSE
 ClassicWay <- FALSE
 eval.PositiveModel <- FALSE
 eval.HSI <- FALSE
-# -- Morning : set to TRUE --
+# -- Morning + Begin Afternoon : set to TRUE --
 eval.AllDataExploration <- eval.AllDataModel <- FALSE
 # -- Afternoon : set to TRUE --
 eval.PresAbsModel <- TRUE

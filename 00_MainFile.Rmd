@@ -15,12 +15,12 @@ output:
       toc:
         collapse: subsection
     includes:
-      in_header: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/header_gitbook_hide.html
+      in_header: header_gitbook_hide.html
     fig_caption: yes
     force_captions: yes
     highlight: pygments
     number_sections: yes
-    keep_md: yes
+    keep_md: no
     split_by: chapter+number
     toolbar:
       position: fixed
@@ -29,8 +29,8 @@ output:
     fig_caption: yes
     highlight: tango
     includes:
-      before_body: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/before_body.tex
-      in_header: /mnt/Data/ThinkR/Gitlab/vignette-thinkr/formation_header_Rmd_Seb.tex
+      before_body: before_body.tex
+      in_header: formation_header_Rmd_FR_Seb.tex
     keep_tex: yes
     number_sections: yes
     toc: yes
@@ -108,7 +108,7 @@ sep = "")
 ```
 
 <!-- Only for Quick method -->
-```{r PresAbsModel, child='sections/02_PresAbsModel.Rmd', eval=eval.PresAbsModel, purl=(eval.PresAbsModel & !ClassicWay)}
+```{r PresAbsModel, child='sections/02_PresAbsModel.Rmd', eval=(eval.PresAbsModel & !ClassicWay), purl=(eval.PresAbsModel & !ClassicWay)}
 ```
 
 ```{r DeltaModel, child='sections/02_DeltaModel.Rmd', eval=(eval.PresAbsModel & eval.PositiveModel & ClassicWay), purl=(eval.PresAbsModel & eval.PositiveModel & ClassicWay)}

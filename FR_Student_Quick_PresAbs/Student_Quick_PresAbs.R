@@ -51,11 +51,14 @@ library(pROC)
 # Load Coastlines shapefile
 Coasts_Vilaine_wgs84 <- readOGR(...) 
 
-# Load the data shapefile
+# Load the data shapefile (if you know how to play with spatial data)
 Stations_covariates_wgs84 <- readOGR(...)
 names(Stations_covariates_wgs84)[9:16] <- 
   c("SeaLim", "Coast", "Zone_bio", "Sedim", "id", "Bathy", "Pente", "TPI")
 
+# Otherwise use this
+# Stations_covariates_wgs84 <- readr::read_rds(
+  # path = paste0(saveWD, "/Stations_covariates_wgs84.rds"))
 # Transform to non-spatial dataset
 dataset <- as.tbl(Stations_covariates_wgs84@data)
 
@@ -103,22 +106,51 @@ Dens02.glm <- glm(Presence ~ ...,
 
 model <- ...
 
-# _Outputs ----
-# Anova
-summary(model)
-anova(model, test = "Chisq")
+## # _Outputs ----
+## # Anova
+## summary(model)
+## anova(model, test = "Chisq")
+## 
+## # % explained deviance
+## pc_dev_expl <- anova(model)[-1, 2] * 100 / anova(model)[1, 4]
+## # % explained per factor
+## print(cbind(rownames(anova(model))[-1], round(pc_dev_expl , digit = 1)))
+## # % explained per df
+## print(cbind(rownames(anova(model))[-1],
+##             round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+## 
+## # Residuals
+## par(mfrow = c(2, 2))
+## plot(model, which = c(1, 2, 3, 4))
+## 
+# _Others interesting graphs ----
+dataset.pred <- dataset %>% 
+  mutate(PredictPA = c(model$fitted),
+         ResidPA = c(resid(model, type = "response")))
 
-# % explained deviance
-pc_dev_expl <- anova(model)[-1, 2] * 100 / anova(model)[1, 4]
-# % explained per factor
-print(cbind(rownames(anova(model))[-1], round(pc_dev_expl , digit = 1)))
-# % explained per df
-print(cbind(rownames(anova(model))[-1], 
-            round(pc_dev_expl / anova(model)[-1, 1], digit = 1)))
+# Fitted vs Observed
+ggplot(dataset.pred) +
+  geom_histogram(aes(PredictPA, fill = factor(Presence))) +
+  facet_wrap(~ Presence) +
+  guides(fill = FALSE)
 
-# Residuals
-par(mfrow = c(2, 2))
-plot(model, which = c(1, 2, 3, 4))
+gpred <- ggplot(dataset.pred) +
+  geom_violin(aes(factor(Presence), PredictPA),
+              draw_quantiles = 0.5)
+gpred
+
+# Repartition of residuals against covariates
+ggplot(dataset.pred) +
+  geom_histogram(aes(ResidPA)) +
+  facet_wrap(~ Bathy_c)
+
+# Same with violin boxplots
+ggplot(dataset.pred) + 
+  geom_violin(aes(Bathy_c, PredictPA),
+              draw_quantiles = 0.5)
+
+ggplot(dataset.pred) + 
+  geom_violin(aes(Bathy_c, ResidPA))
 
 # _Area under the curve ----
 calc.roc <- roc(dataset$Presence, fitted(model))

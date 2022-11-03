@@ -1,0 +1,77 @@
+% GIS and R Course
+% author : Sébastien Rochette
+% contact : sebastienrochettefr@gmail.com
+% website : http://statnmap.com
+
+% \documentclass[a4paper]{article}
+% Lang EN = 1, FR = 2
+% \def\Lang{\Sexpr{Lang}} % 
+% -- Command to find which language is loaded in babel -- %
+% http://tex.stackexchange.com/questions/287667/ifpackagewith-doesnt-behave-as-i-expected-with-global-options
+\usepackage{xparse}
+\ExplSyntaxOn
+\NewDocumentCommand{\packageoptionsTF}{mmmm}
+ {
+  \stanton_package_options:nnTF { #1 } { #2 } { #3 } { #4 }
+ }
+
+\cs_new_protected:Nn \stanton_package_options:nnTF
+ {
+  \clist_map_inline:nn { #2 }
+   {
+    \clist_if_in:cnTF { opt@#1.sty } { ##1 }
+     { #3 } % it's a local option
+     {
+      \clist_if_in:cnTF { @classoptionslist } { ##1 }
+       { #3 } % it's a global option
+       { #4 }
+     }
+   }
+}
+\ExplSyntaxOff
+
+% -- Define a variable depending on language -- %
+\newcommand{\Lang}{0}
+
+\makeatletter
+\@ifpackageloaded{babel}{
+  \packageoptionsTF{babel}{english}{%
+    \renewcommand{\Lang}{1}% english
+  }{%
+    \renewcommand{\Lang}{2}% french
+  }
+}{}
+\makeatother
+
+% -- Define specific lateX options depending on language -- %
+\ifnum\Lang = 1
+  % \usepackage[english]{babel}
+  \usepackage{enumitem}
+  \setlist{itemsep = 0pt}
+  \setlist{topsep = 0pt}
+\fi
+\ifnum\Lang = 2
+  % \usepackage[french]{babel}
+\fi
+
+% --
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnPageRmd.tex}
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnFormeTitreFormationRmd.tex}
+% \input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/MiseEnFormeTitreFormationRmd_NoSectionBreak.tex}
+
+\ifnum\Lang = 1
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/header_EN_Seb.tex}
+\fi
+\ifnum\Lang = 2
+\input{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/latex/header_FR_Seb.tex}
+\fi
+
+% -- Graphic path -- %
+% \graphicspath{{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/img_QGIS/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/figureR/}{/mnt/Data/Formation_SIG-et-R/00_Original_TD_support/Figures_Pres/}{/mnt/Data/autoentrepreneur/Presentation_Produits/SRochettePresentation-img/}}
+\graphicspath{{/mnt/Data/ThinkR/Gitlab/vignette-thinkr/img/}}
+
+% \title{GIS and R Course}
+% \author{Sébastien Rochette}
+
+\setcounter{section}{0} % Value for first section
+

@@ -125,13 +125,19 @@ dataset <- dataset.tmp %>%
 rm(dataset.tmp)
 
 # Extract dataset with only positive values
-dataset <- dataset %>%
+dataset <- Stations_covariates_wgs84 %>%
   dplyr::filter(Density > 0)
+
+
 # Explore data -----------------------------------------------------------------
 # _Balance of sampling plan ----
 levels(dataset$Year)
 levels(dataset$Bathy_c)
 levels(dataset$Sedim)
+
+dataset %>% 
+  count(Year, Sedim) %>% 
+  tidyr::spread(Sedim, n)
 
 table(dataset$Year, dataset$Sedim)
 table(dataset$Year, dataset$Bathy_c)

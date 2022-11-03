@@ -1,4 +1,4 @@
-```{r wdfiDelta}
+```{r wdfigDelta}
 # Folder where to save outputs from R
 figDeltaWD <- paste0(wd, "/03_Figures/02_DeltaModel")
 ```
